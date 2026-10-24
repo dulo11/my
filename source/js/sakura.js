@@ -55,7 +55,10 @@
     ctx.restore();
   }
 
+  let frameId = null;
   function tick() {
+    frameId = null;
+    if (document.hidden || reducedMotion.matches) return;
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     for (const p of petals) {
       p.x += p.sx;
@@ -67,10 +70,14 @@
       }
       drawPetal(p);
     }
-    if (!document.hidden && !reducedMotion.matches) requestAnimationFrame(tick);
+    schedule();
+  }
+  function schedule() {
+    if (frameId === null && !document.hidden && !reducedMotion.matches) frameId = requestAnimationFrame(tick);
   }
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && !reducedMotion.matches) requestAnimationFrame(tick);
+    if (document.hidden && frameId !== null) { cancelAnimationFrame(frameId); frameId = null; }
+    else schedule();
   });
-  if (!reducedMotion.matches) tick();
+  schedule();
 })();
