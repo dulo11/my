@@ -15,8 +15,8 @@ h2{font-size:1.28rem;margin-top:0}
 a{color:#9dcaff}
 section,article{background:rgba(30,43,76,.95);border:1px solid #42537a;border-radius:16px;padding:20px;margin:16px 0;box-shadow:0 8px 24px #0002}
 article{background:#17243f;overflow-wrap:anywhere}
-input,textarea,button{font:inherit;max-width:100%}
-input,textarea{display:block;width:100%;padding:12px;border-radius:10px;background:#0c1630;color:#f2f7ff;border:1px solid #53658f;margin:10px 0}
+input,textarea,select,button{font:inherit;max-width:100%}
+input,textarea,select{display:block;width:100%;padding:12px;border-radius:10px;background:#0c1630;color:#f2f7ff;border:1px solid #53658f;margin:10px 0}
 textarea{height:106px;resize:vertical;font-family:ui-monospace,monospace;font-size:.81rem;word-break:break-all}
 input:focus,textarea:focus{outline:2px solid #86b7ff}
 button{cursor:pointer;border:0;border-radius:10px;padding:11px 17px;background:#4384e2;color:#fff;font-weight:600;margin:5px 8px 5px 0}
@@ -34,7 +34,7 @@ button:hover{filter:brightness(1.1)}
 <main>
   <p><a href="/stars/">← 返回星空</a>　<a href="/">返回博客</a></p>
   <h1>🌌 星空管理后台</h1>
-  <p class="hint">管理公开愿望、隐藏和恢复内容。管理员密码与会话仅保存在自己的 D1 数据库中。</p>
+  <p class="hint">管理愿望与留言，筛选、隐藏和恢复内容。管理员密码与会话仅保存在自己的 D1 数据库中。</p>
   <p id="notice" role="status" aria-live="polite"></p>
   <section id="setup" hidden>
     <h2>首次创建管理员</h2>
@@ -55,7 +55,7 @@ button:hover{filter:brightness(1.1)}
     <label for="initial">新管理员密码</label>
     <input id="initial" type="password" autocomplete="new-password" maxlength="4096" placeholder="位数自行决定">
     <button id="init" type="button">✅ 创建管理员</button>
-    <p class="small">授权码只在当前浏览器页面生成；如果刷新了页面，重新复制并执行新的 SQL 即可。初始化完成后授权立即作废。</p>
+    <p class="small">授权码保存在当前浏览器标签页中，刷新后可以继续；关闭标签页或重新生成授权后，需要执行新 SQL。初始化完成后授权立即作废。</p>
   </section>
   <section id="login" hidden>
     <h2>管理员登录</h2>
@@ -74,9 +74,15 @@ button:hover{filter:brightness(1.1)}
       </div>
       <button id="change" type="button">修改密码</button>
     </section>
-    <div id="items"></div>
+    <section>
+      <h2>内容管理</h2>
+      <label for="kind">内容类型</label><select id="kind"><option value="wish">愿望</option><option value="comment">留言</option></select>
+      <label for="filter-status">显示状态</label><select id="filter-status"><option value="">全部</option><option value="visible">公开</option><option value="hidden">隐藏</option></select>
+      <button id="prev" disabled>上一页</button><span id="page-label">第 1 页</span><button id="next" disabled>下一页</button>
+    </section><div id="items"></div>
   </div>
 </main>
 <script src="/js/yun-stars-admin.js"></script>
 </body>
 </html>
+

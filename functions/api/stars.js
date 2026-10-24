@@ -1,20 +1,62 @@
-const SNAP='stars:public:v1',MAX=500,TTL=172800;
-const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
-const clean=(v,n)=>String(v||'').trim().slice(0,n);
-const admin=(req,env)=>Boolean(env.STAR_ADMIN_TOKEN&&req.headers.get('authorization')==='Bearer '+env.STAR_ADMIN_TOKEN);
-async function snapshot(env){let data=await env.STAR_CACHE.get(SNAP,'json');if(Array.isArray(data))return data;const q=await env.WISH_DB.prepare("SELECT id,nickname,content,x,y,created_at,likes FROM star_wishes WHERE status='visible' ORDER BY created_at DESC LIMIT ?").bind(MAX).all();data=q.results||[];await env.STAR_CACHE.put(SNAP,JSON.stringify(data),{expirationTtl:TTL});return data}
-async function rate(env,req,action){const ip=req.headers.get('CF-Connecting-IP')||'unknown';const bytes=new TextEncoder().encode(ip+'|'+action);const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(v=>v.toString(16).padStart(2,'0')).join('');const bucket='rate:'+action+':'+hash;const old=await env.STAR_CACHE.get(bucket);if(old)return false;await env.STAR_CACHE.put(bucket,'1',{expirationTtl:action==='wish'?60:15});return true}
-async function body(req){if(Number(req.headers.get('content-length')||0)>3000)throw Error('内容过长');return await req.json()}
-async function updateSnapshot(env,change){const data=await env.STAR_CACHE.get(SNAP,'json');if(Array.isArray(data)){change(data);await env.STAR_CACHE.put(SNAP,JSON.stringify(data.slice(0,MAX)),{expirationTtl:TTL})}}
-export async function onRequest({request,env}){try{
-if(!env.WISH_DB||!env.STAR_CACHE)return json({error:'管理员尚未配置 D1 和 KV 绑定'},503);
-const url=new URL(request.url),action=url.searchParams.get('action')||'list',method=request.method;
-if(method==='GET'&&action==='list'){const all=await snapshot(env),page=Math.min(1000,Math.max(1,Number(url.searchParams.get('page'))||1)),size=Math.min(100,Math.max(1,Number(url.searchParams.get('size'))||50));return json({items:all.slice((page-1)*size,page*size),total:all.length,page,size,hasMore:page*size<all.length,cacheHours:48})}
-if(method==='GET'&&action==='comments'){const id=clean(url.searchParams.get('wish'),80);if(!id)return json({error:'缺少星星编号'},400);const key='comments:'+id;let data=await env.STAR_CACHE.get(key,'json');if(!data){const q=await env.WISH_DB.prepare("SELECT id,nickname,content,created_at FROM star_comments WHERE wish_id=? AND status='visible' ORDER BY created_at DESC LIMIT 50").bind(id).all();data=q.results||[];await env.STAR_CACHE.put(key,JSON.stringify(data),{expirationTtl:86400})}return json({items:data})}
-if(method==='POST'&&action==='wish'){if(!(await rate(env,request,'wish')))return json({error:'提交太频繁，请一分钟后再试'},429);const b=await body(request),content=clean(b.content,100),nickname=clean(b.nickname,24)||'匿名星友';if(content.length<2||String(b.content||'').trim().length>100)return json({error:'愿望长度需要 2～100 字'},400);const item={id:crypto.randomUUID(),nickname,content,x:Math.random()*.8+.1,y:Math.random()*.75+.1,created_at:Date.now(),likes:0};await env.WISH_DB.prepare('INSERT INTO star_wishes(id,nickname,content,x,y,created_at) VALUES(?,?,?,?,?,?)').bind(item.id,item.nickname,item.content,item.x,item.y,item.created_at).run();await updateSnapshot(env,a=>a.unshift(item));return json({item},201)}
-if(method==='POST'&&action==='comment'){if(!(await rate(env,request,'comment')))return json({error:'提交太频繁'},429);const b=await body(request),id=clean(b.wishId,80),content=clean(b.content,200),nickname=clean(b.nickname,24)||'匿名星友';if(!id||content.length<2||String(b.content||'').trim().length>200)return json({error:'留言需 2～200 字'},400);const exists=await env.WISH_DB.prepare("SELECT id FROM star_wishes WHERE id=? AND status='visible'").bind(id).first();if(!exists)return json({error:'星星不存在'},404);const item={id:crypto.randomUUID(),nickname,content,created_at:Date.now()};await env.WISH_DB.prepare('INSERT INTO star_comments(id,wish_id,nickname,content,created_at) VALUES(?,?,?,?,?)').bind(item.id,id,nickname,content,item.created_at).run();const key='comments:'+id;const arr=await env.STAR_CACHE.get(key,'json');if(Array.isArray(arr))await env.STAR_CACHE.put(key,JSON.stringify([item,...arr].slice(0,50)),{expirationTtl:86400});return json({item},201)}
-if(method==='POST'&&action==='like'){if(!(await rate(env,request,'like')))return json({error:'操作太频繁'},429);const b=await body(request),id=clean(b.wishId,80);const row=await env.WISH_DB.prepare("UPDATE star_wishes SET likes=likes+1 WHERE id=? AND status='visible' RETURNING likes").bind(id).first();if(!row)return json({error:'星星不存在'},404);await updateSnapshot(env,a=>{const item=a.find(x=>x.id===id);if(item)item.likes=row.likes});return json({likes:row.likes})}
-if(method==='POST'&&action==='moderate'){if(!admin(request,env))return json({error:'无权限'},403);const b=await body(request),id=clean(b.id,80),kind=b.kind==='comment'?'comment':'wish',status=b.visible===true?'visible':'hidden';if(kind==='wish'){await env.WISH_DB.prepare('UPDATE star_wishes SET status=? WHERE id=?').bind(status,id).run();await env.STAR_CACHE.delete(SNAP)}else{const row=await env.WISH_DB.prepare('SELECT wish_id FROM star_comments WHERE id=?').bind(id).first();await env.WISH_DB.prepare('UPDATE star_comments SET status=? WHERE id=?').bind(status,id).run();if(row)await env.STAR_CACHE.delete('comments:'+row.wish_id)}return json({ok:true})}
-return json({error:'请求不支持'},405);
-}catch(e){return json({error:e instanceof SyntaxError?'JSON 格式错误':'请求失败，请稍后重试'},500)}
+import {json,HttpError,readBody,sameOrigin,validId,bumpRevision,revision,cached,rate,moderate,failure} from '../_lib/stars.js';
+const MAX=500,TTL=172800;
+const clean=(v,n)=>String(v ?? '').trim().slice(0,n);
+export async function onRequest({request,env}) {
+  try {
+    if (!env.WISH_DB) return json({error:'管理员尚未配置 D1 绑定 WISH_DB'},503);
+    const db=env.WISH_DB,url=new URL(request.url),action=url.searchParams.get('action')||'list';
+    if (request.method==='GET' && action==='list') {
+      const version=await revision(db);
+      const items=await cached(env,'stars:public:v2:'+version,()=>db.prepare("SELECT id,nickname,content,x,y,created_at,likes FROM star_wishes WHERE status='visible' ORDER BY created_at DESC,id DESC LIMIT ?").bind(MAX).all(),TTL);
+      const integer=(v,d,max)=>Number.isFinite(Number(v))&&v!==null?Math.min(max,Math.max(1,Math.floor(Number(v)))):d;
+      const page=integer(url.searchParams.get('page'),1,1000),size=integer(url.searchParams.get('size'),50,100);
+      return json({items:items.slice((page-1)*size,page*size),total:items.length,page,size,hasMore:page*size<items.length,revision:version,cacheHours:48});
+    }
+    if (request.method==='GET' && action==='comments') {
+      const id=url.searchParams.get('wish');
+      if(!validId(id)) throw new HttpError(400,'星星编号无效');
+      const parent=await db.prepare("SELECT id FROM star_wishes WHERE id=? AND status='visible'").bind(id).first();
+      if(!parent) throw new HttpError(404,'星星不存在或已隐藏');
+      const version=await revision(db);
+      const items=await cached(env,'stars:comments:v2:'+version+':'+id,()=>db.prepare("SELECT id,nickname,content,created_at FROM star_comments WHERE wish_id=? AND status='visible' ORDER BY created_at DESC,id DESC LIMIT 50").bind(id).all(),86400);
+      return json({items});
+    }
+    if(request.method!=='POST') return json({error:'方法不支持'},405);
+    sameOrigin(request);
+    const b=await readBody(request,4096);
+    if(action==='wish') {
+      const content=clean(b.content,101),nickname=clean(b.nickname,24)||'匿名星友';
+      if(content.length<2||content.length>100) throw new HttpError(400,'愿望长度需要 2～100 字');
+      await rate(db,request,'wish',60);
+      const item={id:crypto.randomUUID(),nickname,content,x:Math.random()*.8+.1,y:Math.random()*.75+.1,created_at:Date.now(),likes:0};
+      await db.batch([db.prepare('INSERT INTO star_wishes(id,nickname,content,x,y,created_at) VALUES(?,?,?,?,?,?)').bind(item.id,nickname,content,item.x,item.y,item.created_at),bumpRevision(db)]);
+      return json({item},201);
+    }
+    if(action==='comment'||action==='like') {
+      const id=b.wishId;
+      if(!validId(id)) throw new HttpError(400,'星星编号无效');
+      const parent=await db.prepare("SELECT id FROM star_wishes WHERE id=? AND status='visible'").bind(id).first();
+      if(!parent) throw new HttpError(404,'星星不存在或已隐藏');
+      if(action==='comment') {
+        const content=clean(b.content,201),nickname=clean(b.nickname,24)||'匿名星友';
+        if(content.length<2||content.length>200) throw new HttpError(400,'留言需 2～200 字');
+        await rate(db,request,'comment',15);
+        const item={id:crypto.randomUUID(),nickname,content,created_at:Date.now()};
+        const result=await db.batch([db.prepare("INSERT INTO star_comments(id,wish_id,nickname,content,created_at) SELECT ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM star_wishes WHERE id=? AND status='visible') RETURNING id").bind(item.id,id,nickname,content,item.created_at,id),bumpRevision(db)]);
+        if(!result[0].results?.length) throw new HttpError(404,'星星不存在或已隐藏');
+        return json({item},201);
+      }
+      await rate(db,request,'like',15);
+      const result=await db.batch([db.prepare("UPDATE star_wishes SET likes=likes+1 WHERE id=? AND status='visible' RETURNING likes").bind(id),bumpRevision(db)]);
+      if(!result[0].results?.length) throw new HttpError(404,'星星不存在或已隐藏');
+      return json({likes:result[0].results[0].likes});
+    }
+    // Compatibility for existing server-side scripts; the browser admin uses its HttpOnly session.
+    if(action==='moderate') {
+      if(!env.STAR_ADMIN_TOKEN||request.headers.get('authorization')!=='Bearer '+env.STAR_ADMIN_TOKEN) throw new HttpError(403,'无权限');
+      await moderate(db,{...b,status:b.visible===true?'visible':'hidden'});
+      return json({ok:true});
+    }
+    return json({error:'操作不支持'},404);
+  } catch(error) { return failure(error); }
 }

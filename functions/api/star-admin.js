@@ -1,15 +1,7 @@
+import {json,readBody,sameOrigin,moderate,failure,rate} from '../_lib/stars.js';
 // Starry-space admin: D1-verified, one-time ownership bootstrap.
 // Never place setup codes or administrator passwords in the source repository.
 const enc = new TextEncoder();
-const json = (value, status = 200, extra = {}) => new Response(JSON.stringify(value), {
-  status,
-  headers: {
-    'content-type': 'application/json; charset=utf-8',
-    'cache-control': 'no-store',
-    'x-content-type-options': 'nosniff',
-    ...extra
-  }
-});
 const hex = bytes => Array.from(new Uint8Array(bytes)).map(n => n.toString(16).padStart(2, '0')).join('');
 const equal = (a, b) => {
   a = String(a || ''); b = String(b || '');
@@ -64,10 +56,9 @@ async function sessionValid(req, db) {
     equal(await sign(key, exp + '.' + nonce), mac));
 }
 async function loginBucket(env, request) {
-  if (!env.STAR_CACHE) return null;
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
   const hash = hex(await crypto.subtle.digest('SHA-256', enc.encode(ip)));
-  return 'stars:admin:login:' + hash;
+  return 'admin-failure:' + hash + ':';
 }
 export async function onRequest({request, env}) {
   try {
@@ -94,11 +85,13 @@ export async function onRequest({request, env}) {
         setupReady: !initialized && !!(await setting(db, 'setup_key_hash'))});
     }
 
+    if (request.method === 'GET' && action === 'list') {
+      if (!(await sessionValid(request, db))) return json({error:'请先登录'},401);
+      return await adminList(db, url.searchParams);
+    }
     if (request.method !== 'POST') return json({error:'方法不支持'}, 405);
-    const origin = request.headers.get('origin');
-    if (origin && origin !== url.origin) return json({error:'跨站请求被拒绝'}, 403);
-    if (Number(request.headers.get('content-length') || 0) > 4096) return json({error:'请求过大'}, 413);
-    const b = await request.json();
+    sameOrigin(request);
+    const b = await readBody(request);
     const password = String(b.password || '');
 
     if (action === 'setup') {
@@ -111,7 +104,7 @@ export async function onRequest({request, env}) {
         return json({error:'尚未完成 D1 授权，或授权码不匹配'}, 403);
       }
       if (password.length < 1 || password.length > 4096)
-        return json({error:'管理员密码不能为空'}, 400);
+        return json({error:'管理员密码需为 1～4096 个字符'}, 400);
       const salt = crypto.randomUUID();
       const hashedPassword = await passwordHash(password, salt);
       const nonce = crypto.randomUUID();
@@ -128,18 +121,19 @@ export async function onRequest({request, env}) {
     }
 
     if (action === 'login') {
+      await rate(db, request, 'admin-login', 2);
       const key = await loginBucket(env, request);
-      const attempts = key ? Number(await env.STAR_CACHE.get(key) || 0) : 0;
+      const attempts = (await db.prepare('SELECT COUNT(*) AS count FROM star_rate_limits WHERE bucket LIKE ? AND expires_at>?').bind(key+'%',Date.now()).first()).count;
       if (attempts >= 8) return json({error:'尝试过多，请15分钟后再试'}, 429);
       const salt = await setting(db, 'password_salt');
       const storedHash = await setting(db, 'password_hash');
       const ok = salt && storedHash && password.length <= 4096 &&
         equal(await passwordHash(password, salt), storedHash);
       if (!ok) {
-        if (key) await env.STAR_CACHE.put(key, String(attempts + 1), {expirationTtl:900});
+        await db.prepare('INSERT INTO star_rate_limits(bucket,expires_at) VALUES(?,?)').bind(key+crypto.randomUUID(),Date.now()+900000).run();
         return json({error:'密码错误，或管理员尚未初始化'}, 403);
       }
-      if (key) await env.STAR_CACHE.delete(key);
+      await db.prepare('DELETE FROM star_rate_limits WHERE bucket LIKE ?').bind(key+'%').run();
       const nonce = await setting(db, 'session_nonce');
       const secret = await setting(db, 'session_secret');
       if (!nonce || !secret) return json({error:'会话密钥尚未初始化'}, 503);
@@ -157,7 +151,7 @@ export async function onRequest({request, env}) {
       const oldSalt = await setting(db, 'password_salt');
       const oldHash = await setting(db, 'password_hash');
       const next = String(b.newPassword || '');
-      if (next.length < 1 || next.length > 4096) return json({error:'新密码不能为空'}, 400);
+      if (next.length < 1 || next.length > 4096) return json({error:'新密码需为 1～4096 个字符'}, 400);
       if (!oldSalt || !oldHash || !equal(await passwordHash(password, oldSalt), oldHash))
         return json({error:'原密码错误'}, 403);
       const salt = crypto.randomUUID();
@@ -168,22 +162,27 @@ export async function onRequest({request, env}) {
       ]);
       return json({ok:true}, 200, {'set-cookie':setCookie('', 0)});
     }
-    if (action === 'list') {
-      const items = await db.prepare(
-        'SELECT id,nickname,content,created_at,status,likes FROM star_wishes ORDER BY created_at DESC LIMIT 300'
-      ).all();
-      return json({items: items.results || []});
-    }
+    if (action === 'list') return await adminList(db, new URLSearchParams(b));
     if (action === 'moderate') {
-      const id = String(b.id || '');
-      if (!/^[a-f0-9-]{36}$/i.test(id)) return json({error:'ID 无效'}, 400);
-      const status = b.status === 'visible' ? 'visible' : 'hidden';
-      await db.prepare('UPDATE star_wishes SET status=? WHERE id=?').bind(status, id).run();
-      if (env.STAR_CACHE) await env.STAR_CACHE.delete('stars:public:v1');
+      await moderate(db,b);
       return json({ok:true});
     }
     return json({error:'操作不支持'}, 404);
   } catch (error) {
-    return json({error:'请求处理失败，请检查数据库表及服务配置'}, 500);
+    return failure(error);
   }
+}
+
+
+async function adminList(db, params) {
+  const kind=params.get('kind')==='comment'?'comment':'wish';
+  const status=params.get('status');
+  const raw=Number(params.get('page')||1);
+  const page=Number.isFinite(raw)?Math.max(1,Math.min(100000,Math.floor(raw))):1,size=50;
+  const table=kind==='comment'?'star_comments':'star_wishes';
+  const columns=kind==='comment'?'id,wish_id,nickname,content,created_at,status':'id,nickname,content,created_at,status,likes';
+  const filter=['visible','hidden'].includes(status)?' WHERE status=?':'';
+  const args=filter?[status]:[];
+  const rows=await db.prepare('SELECT '+columns+' FROM '+table+filter+' ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?').bind(...args,size+1,(page-1)*size).all();
+  return json({items:(rows.results||[]).slice(0,size),hasMore:(rows.results||[]).length>size,page,kind});
 }

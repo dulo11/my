@@ -1,8 +1,10 @@
 /* sakura.js - falling petals */
 (function () {
+  if(document.getElementById("yun-sakura-canvas"))return;
   function rand(min, max) { return Math.random() * (max - min) + min; }
 
   const canvas = document.createElement("canvas");
+  canvas.id="yun-sakura-canvas";
   const ctx = canvas.getContext("2d");
   canvas.style.position = "fixed";
   canvas.style.top = "0";
@@ -14,9 +16,9 @@
   document.body.appendChild(canvas);
 
   function resize() {
-    canvas.width = window.innerWidth * devicePixelRatio;
-    canvas.height = window.innerHeight * devicePixelRatio;
-    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    canvas.width = window.innerWidth * Math.min(devicePixelRatio,2);
+    canvas.height = window.innerHeight * Math.min(devicePixelRatio,2);
+    ctx.setTransform(Math.min(devicePixelRatio,2), 0, 0, Math.min(devicePixelRatio,2), 0, 0);
   }
   window.addEventListener("resize", resize);
   resize();
@@ -24,7 +26,7 @@
   const petals = [];
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const mobile = window.matchMedia('(max-width: 768px)');
-  const PETAL_COUNT = reducedMotion.matches ? 0 : (mobile.matches ? 12 : 35);
+  const PETAL_COUNT = mobile.matches ? 12 : 35;
 
   function newPetal() {
     return {
@@ -74,11 +76,14 @@
     schedule();
   }
   function schedule() {
-    if (frameId === null && !document.hidden && !reducedMotion.matches) frameId = requestAnimationFrame(tick);
+    if (frameId === null && !document.hidden && !reducedMotion.matches && (!document.body.dataset.yunEffect || document.body.dataset.yunEffect === "sakura")) frameId = requestAnimationFrame(tick);
   }
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && frameId !== null) { cancelAnimationFrame(frameId); frameId = null; }
     else schedule();
   });
+  const resume=()=>{if(frameId!==null){cancelAnimationFrame(frameId);frameId=null}ctx.clearRect(0,0,innerWidth,innerHeight);schedule()};
+  document.addEventListener('yun:effect',resume);reducedMotion.addEventListener('change',resume);
   schedule();
 })();
+

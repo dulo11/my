@@ -29,3 +29,6 @@ CREATE TABLE IF NOT EXISTS star_settings (
  key TEXT PRIMARY KEY,
  value TEXT NOT NULL
 );
+
+
+CREATE INDEX IF NOT EXISTS idx_star_rate_expiry ON star_rate_limits(expires_at);

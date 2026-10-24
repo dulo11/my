@@ -39,4 +39,11 @@ body[data-yun-theme]:not([data-yun-theme="sakura"]) #content-inner .recent-post-
 #yun-stars-stage canvas{width:100%;height:100%;display:block}
 #yun-stars-message{position:absolute;left:0;right:0;top:48%;text-align:center;color:#fff;pointer-events:none;text-shadow:0 0 16px #cce}
 @media(max-width:600px){.yun-app{margin:12px 8px;padding:14px}#yun-theme-btn{right:10px;bottom:115px}}
-\n#yun-stars-canvas{z-index:1!important}#yun-theme-panel,#yun-theme-btn{isolation:isolate}\n
+
+#yun-stars-canvas{z-index:1!important}#yun-theme-panel,#yun-theme-btn{isolation:isolate}
+
+
+.yun-app{position:relative;z-index:3;box-sizing:border-box}.yun-app *{box-sizing:border-box}
+.yun-app [hidden]{display:none!important}.yun-app button:disabled{opacity:.55;cursor:wait}
+body[data-yun-theme="stars"],body[data-yun-theme="night"]{--yun-panel:rgba(22,32,55,.94);--font-color:#e9eafa;--card-bg:rgba(22,32,55,.94)}
+#yun-theme-panel input[type=number]{width:100%;box-sizing:border-box}
