@@ -30,6 +30,7 @@ inject:
     - <link rel="stylesheet" href="/css/custom.css">
   bottom:
     - <script src="/js/sakura.js"></script>
+    - <script defer src="/js/multilingual.js"></script>
 footer:
   owner:
     enable: true
@@ -43,7 +44,7 @@ social:
 
 # 首页欢迎语
 subtitle:
-  enable: true
+  enable: false
   effect: true
   loop: true
   source: false
