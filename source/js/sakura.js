@@ -22,7 +22,9 @@
   resize();
 
   const petals = [];
-  const PETAL_COUNT = 35;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const mobile = window.matchMedia('(max-width: 768px)');
+  const PETAL_COUNT = reducedMotion.matches ? 0 : (mobile.matches ? 12 : 35);
 
   function newPetal() {
     return {
@@ -65,7 +67,10 @@
       }
       drawPetal(p);
     }
-    requestAnimationFrame(tick);
+    if (!document.hidden && !reducedMotion.matches) requestAnimationFrame(tick);
   }
-  tick();
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && !reducedMotion.matches) requestAnimationFrame(tick);
+  });
+  if (!reducedMotion.matches) tick();
 })();
