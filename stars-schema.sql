@@ -23,3 +23,9 @@ CREATE TABLE IF NOT EXISTS star_rate_limits (
  bucket TEXT PRIMARY KEY,
  expires_at INTEGER NOT NULL
 );
+
+-- Admin password hashes and session invalidation state
+CREATE TABLE IF NOT EXISTS star_settings (
+ key TEXT PRIMARY KEY,
+ value TEXT NOT NULL
+);
