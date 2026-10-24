@@ -110,8 +110,8 @@ export async function onRequest({request, env}) {
           !equal(authorizedHash, await setupHash(code))) {
         return json({error:'尚未完成 D1 授权，或授权码不匹配'}, 403);
       }
-      if (password.length < 12 || password.length > 128)
-        return json({error:'管理员密码需 12～128 位'}, 400);
+      if (password.length < 1 || password.length > 4096)
+        return json({error:'管理员密码不能为空'}, 400);
       const salt = crypto.randomUUID();
       const hashedPassword = await passwordHash(password, salt);
       const nonce = crypto.randomUUID();
@@ -133,7 +133,7 @@ export async function onRequest({request, env}) {
       if (attempts >= 8) return json({error:'尝试过多，请15分钟后再试'}, 429);
       const salt = await setting(db, 'password_salt');
       const storedHash = await setting(db, 'password_hash');
-      const ok = salt && storedHash && password.length <= 128 &&
+      const ok = salt && storedHash && password.length <= 4096 &&
         equal(await passwordHash(password, salt), storedHash);
       if (!ok) {
         if (key) await env.STAR_CACHE.put(key, String(attempts + 1), {expirationTtl:900});
@@ -157,7 +157,7 @@ export async function onRequest({request, env}) {
       const oldSalt = await setting(db, 'password_salt');
       const oldHash = await setting(db, 'password_hash');
       const next = String(b.newPassword || '');
-      if (next.length < 12 || next.length > 128) return json({error:'新密码需 12～128 位'}, 400);
+      if (next.length < 1 || next.length > 4096) return json({error:'新密码不能为空'}, 400);
       if (!oldSalt || !oldHash || !equal(await passwordHash(password, oldSalt), oldHash))
         return json({error:'原密码错误'}, 403);
       const salt = crypto.randomUUID();
