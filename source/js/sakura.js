@@ -60,6 +60,7 @@
     frameId = null;
     if (document.hidden || reducedMotion.matches) return;
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    if (document.body.dataset.yunEffect && document.body.dataset.yunEffect !== "sakura") { schedule(); return; }
     for (const p of petals) {
       p.x += p.sx;
       p.y += p.sy;
