@@ -43,7 +43,7 @@ button:hover{filter:brightness(1.1)}
     <ol class="steps">
       <li>点击「复制授权 SQL」。</li>
       <li>打开 Cloudflare → D1 → <b>mywangzhan</b> → 控制台，粘贴这条 SQL 并执行。</li>
-      <li>返回本页，设置至少 12 位的管理员密码，点击「创建管理员」。</li>
+      <li>返回本页，设置自行决定长度的管理员密码，点击「创建管理员」。</li>
     </ol>
     <p class="small" id="setup-ready"></p>
     <label for="setup-sql">一次性授权 SQL（只需在 D1 控制台执行一次）</label>
@@ -53,7 +53,7 @@ button:hover{filter:brightness(1.1)}
     <label for="setup-code">本次授权码（自动生成，不要发送给别人）</label>
     <input id="setup-code" type="password" autocomplete="off" spellcheck="false" placeholder="自动生成的授权码">
     <label for="initial">新管理员密码</label>
-    <input id="initial" type="password" autocomplete="new-password" minlength="12" maxlength="128" placeholder="至少12位，自己牢记">
+    <input id="initial" type="password" autocomplete="new-password" maxlength="4096" placeholder="位数自行决定">
     <button id="init" type="button">✅ 创建管理员</button>
     <p class="small">授权码只在当前浏览器页面生成；如果刷新了页面，重新复制并执行新的 SQL 即可。初始化完成后授权立即作废。</p>
   </section>
@@ -70,7 +70,7 @@ button:hover{filter:brightness(1.1)}
       <h3>修改管理员密码</h3>
       <div class="fields">
         <input id="old" type="password" autocomplete="current-password" placeholder="当前密码">
-        <input id="new" type="password" autocomplete="new-password" minlength="12" maxlength="128" placeholder="新密码（至少12位）">
+        <input id="new" type="password" autocomplete="new-password" maxlength="4096" placeholder="新密码（位数自行决定）">
       </div>
       <button id="change" type="button">修改密码</button>
     </section>
