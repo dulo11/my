@@ -22,7 +22,9 @@
   resize();
 
   const petals = [];
-  const PETAL_COUNT = 35;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const mobile = window.matchMedia('(max-width: 768px)');
+  const PETAL_COUNT = reducedMotion.matches ? 0 : (mobile.matches ? 12 : 35);
 
   function newPetal() {
     return {
@@ -53,7 +55,10 @@
     ctx.restore();
   }
 
+  let frameId = null;
   function tick() {
+    frameId = null;
+    if (document.hidden || reducedMotion.matches) return;
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     for (const p of petals) {
       p.x += p.sx;
@@ -65,7 +70,14 @@
       }
       drawPetal(p);
     }
-    requestAnimationFrame(tick);
+    schedule();
   }
-  tick();
+  function schedule() {
+    if (frameId === null && !document.hidden && !reducedMotion.matches) frameId = requestAnimationFrame(tick);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && frameId !== null) { cancelAnimationFrame(frameId); frameId = null; }
+    else schedule();
+  });
+  schedule();
 })();
