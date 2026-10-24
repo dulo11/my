@@ -28,8 +28,10 @@ background:
 inject:
   head:
     - <link rel="stylesheet" href="/css/custom.css">
+    - <link rel="stylesheet" href="/css/yun-extras.css">
   bottom:
     - <script src="/js/sakura.js"></script>
+    - <script src="/js/yun-themes.js"></script>
 footer:
   owner:
     enable: true
