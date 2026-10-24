@@ -64,4 +64,10 @@ subtitle:
   - "Português: Encontramo-nos quando as nuvens se erguem, e sentimos saudade quando o vento passa."
   - "Русский: Мы встречаемся, когда поднимаются облака, и вспоминаем друг друга, когда проходит ветер."
   - "العربية: نلتقي حين تنهض الغيوم، ونشتاق حين يمرّ النسيم."
-\n# 新增页面入口\nmenu:\n  首页: / || fas fa-home\n  工具箱: /tools/ || fas fa-toolbox\n  星空空间: /stars/ || fas fa-star\n  主题中心: /themes/ || fas fa-palette\n
+
+# 新增页面入口
+menu:
+  首页: / || fas fa-home
+  工具箱: /tools/ || fas fa-toolbox
+  星空空间: /stars/ || fas fa-star
+  主题中心: /themes/ || fas fa-palette
