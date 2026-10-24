@@ -5,7 +5,9 @@ async function signature(secret,payload){const k=await crypto.subtle.importKey('
 async function valid(req,env){const cookie=(req.headers.get('cookie')||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('star_session='))?.slice(13);if(!cookie||!env.STAR_ADMIN_TOKEN)return false;const [exp,nonce,sig]=cookie.split('.');if(!exp||!nonce||!sig||Number(exp)<Date.now()||Number(exp)>Date.now()+31*86400000)return false;const row=await env.WISH_DB.prepare("SELECT value FROM star_settings WHERE key='session_nonce'").first();return !!row&&row.value===nonce&&await signature(env.STAR_ADMIN_TOKEN,exp+'.'+nonce)===sig}
 const setCookie=(v,age)=>'star_session='+v+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age='+age;
 export async function onRequest({request,env}){try{
-if(!env.WISH_DB||!env.STAR_ADMIN_TOKEN)return out({error:'请先绑定 WISH_DB 并配置 STAR_ADMIN_TOKEN'},503);
+const healthAction=new URL(request.url).searchParams.get('action');
+if(request.method==='GET'&&healthAction==='health')return out({wishDb:!!env.WISH_DB,starCache:!!env.STAR_CACHE,adminToken:typeof env.STAR_ADMIN_TOKEN==='string'&&env.STAR_ADMIN_TOKEN.length>0,dbQueryable:!!env.WISH_DB?.prepare,checkedAt:new Date().toISOString()});
+if(!env.WISH_DB||!env.STAR_ADMIN_TOKEN)return out({error:'缺少运行环境配置',missing:[...(!env.WISH_DB?['WISH_DB']:[]),...(!env.STAR_ADMIN_TOKEN?['STAR_ADMIN_TOKEN']:[])]},503);
 const action=new URL(request.url).searchParams.get('action')||'me';
 if(request.method==='GET'&&action==='me'){const row=await env.WISH_DB.prepare("SELECT value FROM star_settings WHERE key='password_hash'").first();return out({authenticated:await valid(request,env),initialized:!!row})}
 if(request.method!=='POST')return out({error:'方法不支持'},405);
