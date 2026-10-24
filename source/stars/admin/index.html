@@ -1,1 +1,82 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>星空管理后台</title><style>body{font:16px system-ui;background:#10162b;color:#f0f4ff;margin:0;padding:20px}main{max-width:850px;margin:auto}section,article{background:#202b47;border-radius:14px;padding:18px;margin:14px 0}input,button{font:inherit;padding:10px;margin:5px;border-radius:8px}input{max-width:90%}button{cursor:pointer}small{opacity:.7}article{overflow-wrap:anywhere}#notice{color:#ffce91}</style></head><body><main><h1>🌌 星空管理后台</h1><p><a href="/stars/" style="color:#a8d7ff">返回星空</a></p><p id="notice"></p><section id="setup" hidden><h2>首次设置管理员密码</h2><p>先在 Cloudflare 设置 STAR_ADMIN_TOKEN，再在此仅输入一次初始化密钥。</p><input id="token" type="password" placeholder="初始化密钥"><input id="initial" type="password" placeholder="新密码（至少12位）"><button id="init">创建管理员</button></section><section id="login" hidden><h2>管理员登录</h2><input id="password" type="password" placeholder="管理员密码"><button id="enter">登录（30天）</button></section><div id="panel" hidden><section><button id="refresh">刷新愿望列表</button><button id="logout">退出登录</button><h3>修改密码</h3><input id="old" type="password" placeholder="当前密码"><input id="new" type="password" placeholder="新密码（至少12位）"><button id="change">修改密码</button></section><div id="items"></div></div></main><script src="/js/yun-stars-admin.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>星空管理后台 · 雲</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 80% 5%,#28365e 0,transparent 48%),#0a1023;color:#eef4ff;min-height:100vh;padding:24px 14px}
+main{max-width:860px;margin:0 auto}
+h1{font-size:clamp(1.55rem,6vw,2.4rem);margin:20px 0 6px}
+h2{font-size:1.28rem;margin-top:0}
+a{color:#9dcaff}
+section,article{background:rgba(30,43,76,.95);border:1px solid #42537a;border-radius:16px;padding:20px;margin:16px 0;box-shadow:0 8px 24px #0002}
+article{background:#17243f;overflow-wrap:anywhere}
+input,textarea,button{font:inherit;max-width:100%}
+input,textarea{display:block;width:100%;padding:12px;border-radius:10px;background:#0c1630;color:#f2f7ff;border:1px solid #53658f;margin:10px 0}
+textarea{height:106px;resize:vertical;font-family:ui-monospace,monospace;font-size:.81rem;word-break:break-all}
+input:focus,textarea:focus{outline:2px solid #86b7ff}
+button{cursor:pointer;border:0;border-radius:10px;padding:11px 17px;background:#4384e2;color:#fff;font-weight:600;margin:5px 8px 5px 0}
+button.secondary{background:#354b70}
+button:hover{filter:brightness(1.1)}
+.steps{line-height:1.85;padding-left:23px}
+.hint{color:#bbc9e7;line-height:1.7}
+.small{font-size:.88rem;color:#bdcbe3}
+#notice{min-height:24px;color:#ffe0a5;font-weight:600;overflow-wrap:anywhere}
+[hidden]{display:none!important}
+@media(min-width:720px){.fields{display:flex;gap:12px}.fields input{width:50%}}
+</style>
+</head>
+<body>
+<main>
+  <p><a href="/stars/">← 返回星空</a>　<a href="/">返回博客</a></p>
+  <h1>🌌 星空管理后台</h1>
+  <p class="hint">管理公开愿望、隐藏和恢复内容。管理员密码与会话仅保存在自己的 D1 数据库中。</p>
+  <p id="notice" role="status" aria-live="polite"></p>
+  <section id="setup" hidden>
+    <h2>首次创建管理员</h2>
+    <p><strong>不再需要 STAR_ADMIN_TOKEN，也不用 Termux 或 Wrangler。</strong></p>
+    <p>为防止陌生人抢先注册，第一次设置必须证明你拥有 Cloudflare D1 数据库。</p>
+    <ol class="steps">
+      <li>点击「复制授权 SQL」。</li>
+      <li>打开 Cloudflare → D1 → <b>mywangzhan</b> → 控制台，粘贴这条 SQL 并执行。</li>
+      <li>返回本页，设置至少 12 位的管理员密码，点击「创建管理员」。</li>
+    </ol>
+    <p class="small" id="setup-ready"></p>
+    <label for="setup-sql">一次性授权 SQL（只需在 D1 控制台执行一次）</label>
+    <textarea id="setup-sql" readonly spellcheck="false"></textarea>
+    <button id="copy-sql" type="button">📋 复制授权 SQL</button>
+    <button id="renew" type="button" class="secondary">重新生成授权</button>
+    <label for="setup-code">本次授权码（自动生成，不要发送给别人）</label>
+    <input id="setup-code" type="password" autocomplete="off" spellcheck="false" placeholder="自动生成的授权码">
+    <label for="initial">新管理员密码</label>
+    <input id="initial" type="password" autocomplete="new-password" minlength="12" maxlength="128" placeholder="至少12位，自己牢记">
+    <button id="init" type="button">✅ 创建管理员</button>
+    <p class="small">授权码只在当前浏览器页面生成；如果刷新了页面，重新复制并执行新的 SQL 即可。初始化完成后授权立即作废。</p>
+  </section>
+  <section id="login" hidden>
+    <h2>管理员登录</h2>
+    <input id="password" type="password" autocomplete="current-password" placeholder="管理员密码">
+    <button id="enter" type="button">登录（30天有效）</button>
+  </section>
+  <div id="panel" hidden>
+    <section>
+      <h2>管理操作</h2>
+      <button id="refresh" type="button">刷新愿望列表</button>
+      <button id="logout" type="button" class="secondary">退出登录</button>
+      <h3>修改管理员密码</h3>
+      <div class="fields">
+        <input id="old" type="password" autocomplete="current-password" placeholder="当前密码">
+        <input id="new" type="password" autocomplete="new-password" minlength="12" maxlength="128" placeholder="新密码（至少12位）">
+      </div>
+      <button id="change" type="button">修改密码</button>
+    </section>
+    <div id="items"></div>
+  </div>
+</main>
+<script src="/js/yun-stars-admin.js"></script>
+</body>
+</html>
