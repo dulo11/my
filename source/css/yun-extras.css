@@ -1,0 +1,41 @@
+/* User-selectable themes. Original Sakura stays default. */
+:root{--yun-accent:#d579ad;--yun-panel:rgba(255,255,255,.76);--yun-ink:#303040}
+body[data-yun-theme="stars"]{background:#080f2c!important;color:#e9eafa}
+body[data-yun-theme="ocean"]{background:linear-gradient(135deg,#053f64,#0093ad)!important}
+body[data-yun-theme="snow"]{background:linear-gradient(145deg,#b3d9ed,#eef9ff)!important}
+body[data-yun-theme="autumn"]{background:linear-gradient(145deg,#4a231b,#b35a28)!important}
+body[data-yun-theme="forest"]{background:linear-gradient(145deg,#102e26,#34745d)!important}
+body[data-yun-theme="night"]{background:#101017!important}
+body[data-yun-theme="minimal"]{background:#f6f7fb!important}
+body[data-yun-theme]:not([data-yun-theme="sakura"]) #content-inner .card-widget,
+body[data-yun-theme]:not([data-yun-theme="sakura"]) #content-inner .post,
+body[data-yun-theme]:not([data-yun-theme="sakura"]) #content-inner .recent-post-item{background:var(--yun-panel)!important;backdrop-filter:blur(14px)}
+#yun-theme-btn{position:fixed;right:14px;bottom:115px;z-index:1100;border:0;border-radius:50%;width:44px;height:44px;background:#fffdf4;color:#513c61;box-shadow:0 3px 18px #0004;font-size:22px;cursor:pointer}
+#yun-theme-panel{position:fixed;right:12px;bottom:166px;z-index:1101;width:min(340px,calc(100vw - 24px));max-height:70vh;overflow:auto;background:#fffffff2;color:#262436;border-radius:17px;padding:16px;box-shadow:0 8px 32px #0005;backdrop-filter:blur(18px)}
+#yun-theme-panel[hidden]{display:none}
+#yun-theme-panel h3{margin:0 0 12px;font-size:18px}
+.yun-theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.yun-theme-grid button{padding:10px 2px;border:1px solid #ddd;border-radius:10px;background:#f9f6fb;cursor:pointer;font-size:12px}
+.yun-theme-grid button[aria-pressed="true"]{border:2px solid #bd68ac;background:#f8def0}
+#yun-theme-panel label{display:block;margin-top:12px;font-size:13px}
+#yun-theme-panel select,#yun-theme-panel input[type=range]{width:100%}
+#yun-theme-panel .yun-links{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+#yun-theme-panel .yun-links a{color:#8a3d81;text-decoration:underline}
+#yun-effects{position:fixed;inset:0;z-index:0;pointer-events:none}
+#yun-stars-canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
+.yun-app{max-width:1100px;margin:50px auto;padding:20px;color:#292637;background:#ffffffdf;border-radius:18px;box-shadow:0 10px 35px #0002}
+.yun-app h1{margin:0 0 12px}
+.yun-app input,.yun-app textarea,.yun-app select,.yun-app button{font:inherit}
+.yun-app input,.yun-app textarea,.yun-app select{max-width:100%;border:1px solid #c9c4d1;border-radius:9px;padding:9px}
+.yun-app textarea{width:100%;min-height:110px}
+.yun-app button{border:0;border-radius:9px;background:#e8c6e2;padding:9px 14px;cursor:pointer}
+.yun-tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}
+.yun-tool-grid button{text-align:left;min-height:60px;background:#f6edf7}
+.yun-tool-grid button:hover{background:#eddaed}
+.yun-app pre{white-space:pre-wrap;word-break:break-all;background:#f5f3f7;border-radius:9px;padding:14px;max-height:420px;overflow:auto}
+.yun-app .yun-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.yun-app .yun-row input{flex:1;min-width:150px}
+#yun-stars-stage{height:65vh;min-height:350px;position:relative;overflow:hidden;border-radius:16px;background:radial-gradient(ellipse at 50% 90%,#273d77,#090d27 70%);touch-action:manipulation}
+#yun-stars-stage canvas{width:100%;height:100%;display:block}
+#yun-stars-message{position:absolute;left:0;right:0;top:48%;text-align:center;color:#fff;pointer-events:none;text-shadow:0 0 16px #cce}
+@media(max-width:600px){.yun-app{margin:12px 8px;padding:14px}#yun-theme-btn{right:10px;bottom:115px}}
