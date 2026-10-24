@@ -30,7 +30,14 @@
   const welcome=()=>data[index][2];
   function updateSubtitle(){
     subtitle=document.querySelector('#site-subtitle');
-    if(!subtitle)return;
+    if(!subtitle){
+      const host=document.querySelector('#site-info');
+      if(!host)return;
+      subtitle=document.createElement('div');
+      subtitle.id='site-subtitle';
+      subtitle.className='bf-custom-subtitle';
+      host.appendChild(subtitle);
+    }
     subtitle.textContent=welcome();
     subtitle.lang=data[index][0];
     subtitle.classList.remove('lang-fade');void subtitle.offsetWidth;subtitle.classList.add('lang-fade');
