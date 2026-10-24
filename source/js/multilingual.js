@@ -25,7 +25,7 @@
   const stored=()=>{try{return localStorage.getItem(KEY)}catch{return null}};
   const save=(k,v)=>{try{localStorage.setItem(k,v)}catch{}};
   let lang=codes.has(stored())?stored():detect();
-  let rotating=(()=>{try{return localStorage.getItem(ROTATE)==='1'}catch{return false}})();
+  let rotating=(()=>{try{return localStorage.getItem(ROTATE)!=='0'}catch{return true}})();
   let index=Math.max(0,data.findIndex(x=>x[0]===lang)), timer=null, subtitle=null;
   const welcome=()=>data[index][2];
   function updateSubtitle(){
@@ -44,11 +44,16 @@
   }
   function updateNav(){
     const row=codes.get(lang)||data[0];
+    const routeNames={'/':'首页','/archives/':'归档','/categories/':'分类','/tags/':'标签','/about/':'关于','/projects/':'项目','/contact/':'联系'};
     document.querySelectorAll('#nav a, #sidebar a, #menus a').forEach(a=>{
       const label=a.querySelector('.site-page-name')||a;
       if(label.children.length)return;
       const current=label.textContent.trim();
-      if(!label.dataset.langOriginal&&navKeys.includes(current))label.dataset.langOriginal=current;
+      if(!label.dataset.langOriginal){
+        const route=new URL(a.href,location.href).pathname;
+        if(routeNames[route])label.dataset.langOriginal=routeNames[route];
+        else if(navKeys.includes(current))label.dataset.langOriginal=current;
+      }
       const orig=label.dataset.langOriginal;
       const i=navKeys.indexOf(orig);
       if(i>=0)label.textContent=row[3][i];
@@ -65,7 +70,7 @@
   function stop(){if(timer){clearInterval(timer);timer=null}}
   function start(){
     stop();if(!rotating||document.hidden||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-    timer=setInterval(()=>{index=(index+1)%data.length;updateSubtitle()},6500);
+    timer=setInterval(()=>{index=(index+1)%data.length;updateSubtitle()},4500);
   }
   function setLang(value){
     if(!codes.has(value))return;
