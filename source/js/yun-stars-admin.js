@@ -42,7 +42,8 @@
   }
   async function load(){
     try{
-      const response=await api('list');
+      const response=await api('list',{});
+      notice('');
       const list=$('items');
       list.replaceChildren();
       if(!response.items.length){
