@@ -89,7 +89,7 @@
     try{
       const password=$('initial').value;
       const code=$('setup-code').value.trim();
-      if(password.length<12)throw Error('管理员密码至少 12 位');
+      if(password.length<1)throw Error('管理员密码不能为空');
       await api('setup',{setupCode:code,password});
       $('initial').value='';
       $('setup-code').value='';
