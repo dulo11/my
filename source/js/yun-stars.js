@@ -1,6 +1,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id),c=$('sky'),ctx=c.getContext('2d'),box=c.parentElement;
 let w=0,h=0,stars=[],meteors=[],wishes=[],page=1,more=true,galaxy=false,t=0,selected=null,loading=false,version=null,detailRequest=0;
+let config={wishEnabled:true,commentEnabled:true,likeEnabled:true,wishMax:100,commentMax:200};
 const CACHE='yun-public-wishes-v2',reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const status=s=>$('wish-status').textContent=s;
 async function call(action,method='GET',data){
@@ -23,11 +24,11 @@ function paint(){
 }
 let frameId=null;
 function frame(){frameId=null;if(document.hidden)return;t++;paint();schedule()}
-function schedule(){if(frameId===null&&!document.hidden&&!reduced.matches)frameId=requestAnimationFrame(frame)}
+function schedule(){if(frameId===null&&!document.hidden&&!reduced.matches&&document.body.dataset.yunPowerSave!=='true')frameId=requestAnimationFrame(frame)}
 function resume(){if(frameId!==null){cancelAnimationFrame(frameId);frameId=null}paint();schedule()}
-document.addEventListener('visibilitychange',resume);reduced.addEventListener('change',resume);addEventListener('resize',resize);resize();schedule();
+document.addEventListener('visibilitychange',resume);document.addEventListener('yun:effect',resume);reduced.addEventListener('change',resume);addEventListener('resize',resize);resize();schedule();
 function remember(){try{localStorage.setItem(CACHE,JSON.stringify({items:wishes.slice(0,200),time:Date.now()}))}catch{}}
-function renderList(){const list=$('wish-list');list.replaceChildren();for(const wish of wishes){const button=document.createElement('button');button.textContent=wish.nickname+'：'+wish.content;button.onclick=()=>openStar(wish);list.append(button)}paint()}
+function renderList(){const list=$('wish-list');list.replaceChildren();for(const wish of wishes){const button=document.createElement('button');button.textContent=(wish.pinned?'📌 ':'')+wish.nickname+'：'+wish.content;button.onclick=()=>openStar(wish);list.append(button)}paint()}
 async function load(reset=false){
  if(loading||(!reset&&!more))return;loading=true;$('reload').disabled=$('more').disabled=true;
  try{
@@ -44,16 +45,19 @@ async function load(reset=false){
 try{const cached=JSON.parse(localStorage.getItem(CACHE)||'null');if(Array.isArray(cached?.items)&&Date.now()-cached.time<172800000){wishes=cached.items;renderList();status('正在显示本地缓存，等待同步…')}}catch{}
 function line(text,parent){const p=document.createElement('p');p.textContent=text;parent.append(p)}
 async function openStar(a){
- selected=a;const ticket=++detailRequest;$('star-detail').hidden=false;$('star-name').textContent='⭐ '+a.nickname;$('star-text').textContent=a.content;$('star-time').textContent=new Date(a.created_at).toLocaleString()+' · ❤️ '+(a.likes||0);$('star-comments').replaceChildren();
+ selected=a;const ticket=++detailRequest;$('star-detail').hidden=false;$('star-name').textContent='⭐ '+a.nickname;$('star-text').textContent=a.content;$('star-reply').hidden=!a.admin_reply;$('star-reply').textContent=a.admin_reply?'管理员回复：'+a.admin_reply:'';$('star-time').textContent=new Date(a.created_at).toLocaleString()+' · ❤️ '+(a.likes||0);$('star-comments').replaceChildren();
  $('star-detail').scrollIntoView({behavior:reduced.matches?'auto':'smooth',block:'start'});
  try{const j=await call('comments','GET',{wish:a.id});if(ticket!==detailRequest)return;
- if(!j.items.length)line('暂无留言',$('star-comments'));for(const x of j.items)line(x.nickname+'：'+x.content,$('star-comments'));
+ if(!j.items.length)line('暂无留言',$('star-comments'));for(const x of j.items){line((x.pinned?'📌 ':'')+x.nickname+'：'+x.content,$('star-comments'));if(x.admin_reply)line('管理员回复：'+x.admin_reply,$('star-comments'))};
  }catch(e){if(ticket===detailRequest)line('加载留言失败：'+e.message,$('star-comments'))}
 }
 c.addEventListener('pointerdown',e=>{const r=c.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const a=wishes.map(v=>({v,d:Math.hypot(v.x*w-x,v.y*h-y)})).sort((a,b)=>a.d-b.d)[0];if(a&&a.d<24)openStar(a.v);else{stars.push({x,y,r:3,p:1});if(stars.length>300)stars.shift();paint()}});
 $('meteor').onclick=()=>shoot(25);$('galaxy').onclick=()=>{galaxy=!galaxy;paint()};$('reload').onclick=()=>load(true);$('more').onclick=()=>load();
-$('send').onclick=async()=>{const content=$('wish').value.trim(),nickname=$('nickname').value.trim();if(content.length<2)return status('请至少输入两个字');$('send').disabled=true;try{const j=await call('wish','POST',{content,nickname});wishes.unshift(j.item);remember();renderList();$('wish').value='';shoot(18);status('许愿成功！已保存到共享数据库')}catch(e){status(e.message)}finally{$('send').disabled=false}};
-$('star-like').onclick=async()=>{if(!selected)return;const target=selected;$('star-like').disabled=true;try{const j=await call('like','POST',{wishId:target.id});target.likes=j.likes;remember();if(selected?.id===target.id)$('star-time').textContent=new Date(target.created_at).toLocaleString()+' · ❤️ '+j.likes}catch(e){status(e.message)}finally{$('star-like').disabled=false}};
-$('comment-send').onclick=async()=>{if(!selected)return;const target=selected,content=$('comment-text').value.trim();if(content.length<2)return status('留言请至少输入两个字');$('comment-send').disabled=true;try{await call('comment','POST',{wishId:target.id,content,nickname:$('nickname').value});if(selected?.id===target.id){$('comment-text').value='';await openStar(target)}status('留言成功')}catch(e){status(e.message)}finally{$('comment-send').disabled=false}};
-$('save').onclick=()=>{paint();const a=document.createElement('a');a.download='yun-stars.png';a.href=c.toDataURL('image/png');a.click()};load(true);
+$('send').onclick=async()=>{const content=$('wish').value.trim(),nickname=$('nickname').value.trim();if(content.length<2)return status('请至少输入两个字');$('send').disabled=true;try{const j=await call('wish','POST',{content,nickname});wishes.unshift(j.item);remember();renderList();$('wish').value='';shoot(18);status('许愿成功！已保存到共享数据库')}catch(e){status(e.message)}finally{$('send').disabled=!config.wishEnabled}};
+$('star-like').onclick=async()=>{if(!selected)return;const target=selected;$('star-like').disabled=true;try{const j=await call('like','POST',{wishId:target.id});target.likes=j.likes;remember();if(selected?.id===target.id)$('star-time').textContent=new Date(target.created_at).toLocaleString()+' · ❤️ '+j.likes}catch(e){status(e.message)}finally{$('star-like').disabled=!config.likeEnabled}};
+$('comment-send').onclick=async()=>{if(!selected)return;const target=selected,content=$('comment-text').value.trim();if(content.length<2)return status('留言请至少输入两个字');$('comment-send').disabled=true;try{await call('comment','POST',{wishId:target.id,content,nickname:$('nickname').value});if(selected?.id===target.id){$('comment-text').value='';await openStar(target)}status('留言成功')}catch(e){status(e.message)}finally{$('comment-send').disabled=!config.commentEnabled}};
+$('save').onclick=()=>{paint();const a=document.createElement('a');a.download='yun-stars.png';a.href=c.toDataURL('image/png');a.click()};
+async function configure(){try{const r=await call('config');config=r.settings;$('announcement').hidden=!config.announcement;$('announcement').textContent=config.announcement;$('wish').maxLength=config.wishMax;$('comment-text').maxLength=config.commentMax;for(const [id,key] of [['send','wishEnabled'],['star-like','likeEnabled'],['comment-send','commentEnabled']]){$(id).disabled=!config[key];$(id).title=config[key]?'':'管理员已暂停此功能'}}catch(e){status('设置加载失败：'+e.message)}}
+configure();load(true);
 })();
+

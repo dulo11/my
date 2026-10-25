@@ -30,8 +30,8 @@ inject:
     - <link rel="stylesheet" href="/css/custom.css">
     - <link rel="stylesheet" href="/css/yun-extras.css">
   bottom:
-    - <script src="/js/sakura.js"></script>
-    - <script src="/js/yun-themes.js"></script>
+    - <script src="/js/sakura.js?v=20261025-2"></script>
+    - <script src="/js/yun-themes.js?v=20261025-2"></script>
 footer:
   owner:
     enable: true
@@ -71,3 +71,4 @@ menu:
   工具箱: /tools/ || fas fa-toolbox
   星空空间: /stars/ || fas fa-star
   主题中心: /themes/ || fas fa-palette
+

@@ -38,7 +38,7 @@ test('full wish/comment/like/admin workflow and versioned cache moderation',asyn
  assert.equal((await f.req(admin,'action=moderate',{id:crypto.randomUUID(),status:'hidden'},auth)).status,404);
  assert.equal((await f.req(admin,'action=password',{password:'x',newPassword:'你好'.repeat(2048)},auth)).status,200);
  assert.equal((await f.req(admin,'action=me',undefined,auth)).data.authenticated,false);
- f.sql.exec('DELETE FROM star_rate_limits');
+ f.sql.exec('DELETE FROM star_limits_v2');
  assert.equal((await f.req(admin,'action=login',{password:'你好'.repeat(2048)})).status,200);
 });
 test('input errors, cross-origin rejection, pagination, authorization',async()=>{
@@ -46,7 +46,7 @@ test('input errors, cross-origin rejection, pagination, authorization',async()=>
  assert.equal((await f.req(stars,'action=wish','{')).status,400);
  assert.equal((await f.req(stars,'action=wish','null')).status,400);
  assert.equal((await f.req(stars,'action=wish',{content:'hi'},{origin:'https://evil.invalid'})).status,403);
- assert.equal((await f.req(stars,'action=wish',{content:'a'.repeat(5000)})).status,413);
+ assert.equal((await f.req(stars,'action=wish',{content:'a'.repeat(20000)})).status,413);
  assert.equal((await f.req(stars,'action=wish',{content:'x'})).status,400);
  const auth=await initialize(f);
  for(let i=0;i<60;i++)f.sql.prepare('INSERT INTO star_wishes(id,nickname,content,x,y,created_at) VALUES(?,?,?,?,?,?)').run(crypto.randomUUID(),'n','c',.5,.5,i);
@@ -65,9 +65,10 @@ test('KV outage cannot lose successful writes; cached versions never overwrite t
 test('login rate limits work without KV',async()=>{
  const f=fixture();await initialize(f);delete f.env.STAR_CACHE;
  for(let i=0;i<8;i++){
-  f.sql.prepare("DELETE FROM star_rate_limits WHERE bucket LIKE 'admin-login:%'").run();
+  f.sql.prepare("DELETE FROM star_limits_v2 WHERE bucket LIKE 'admin-login:%'").run();
   assert.equal((await f.req(admin,'action=login',{password:'wrong'})).status,403);
  }
- f.sql.prepare("DELETE FROM star_rate_limits WHERE bucket LIKE 'admin-login:%'").run();
+ f.sql.prepare("DELETE FROM star_limits_v2 WHERE bucket LIKE 'admin-login:%'").run();
  assert.equal((await f.req(admin,'action=login',{password:'x'})).status,429);
 });
+

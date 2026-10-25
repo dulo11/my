@@ -26,7 +26,7 @@ button:hover{filter:brightness(1.1)}
 .hint{color:#bbc9e7;line-height:1.7}
 .small{font-size:.88rem;color:#bdcbe3}
 #notice{min-height:24px;color:#ffe0a5;font-weight:600;overflow-wrap:anywhere}
-[hidden]{display:none!important}
+[hidden]{display:none!important}input[type=checkbox]{display:inline-block;width:auto;margin:0 6px 0 0}button:disabled{opacity:.55;cursor:wait}.danger{background:#9b4052}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stats p{margin:0;padding:12px;background:#101d39;border-radius:10px}.fields label{flex:1;min-width:100px}.fields label input{width:100%}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem}.item-actions{display:flex;flex-wrap:wrap}
 @media(min-width:720px){.fields{display:flex;gap:12px}.fields input{width:50%}}
 </style>
 </head>
@@ -35,7 +35,7 @@ button:hover{filter:brightness(1.1)}
   <p><a href="/stars/">← 返回星空</a>　<a href="/">返回博客</a></p>
   <h1>🌌 星空管理后台</h1>
   <p class="hint">管理愿望与留言，筛选、隐藏和恢复内容。管理员密码与会话仅保存在自己的 D1 数据库中。</p>
-  <p id="notice" role="status" aria-live="polite"></p>
+  <p id="notice" role="status" aria-live="polite"></p><p class="small">版本 <span id="version">2026.10.25.2</span> <button id="diagnose" class="secondary">检查连接</button></p><pre id="diagnostic" hidden></pre>
   <section id="setup" hidden>
     <h2>首次创建管理员</h2>
     <p><strong>不再需要 STAR_ADMIN_TOKEN，也不用 Termux 或 Wrangler。</strong></p>
@@ -62,7 +62,7 @@ button:hover{filter:brightness(1.1)}
     <input id="password" type="password" autocomplete="current-password" placeholder="管理员密码">
     <button id="enter" type="button">登录（30天有效）</button>
   </section>
-  <div id="panel" hidden>
+  <div id="panel" hidden><section><h2>后台首页</h2><div id="stats" class="stats"></div><p class="small">今日新增按北京时间统计。</p></section>
     <section>
       <h2>管理操作</h2>
       <button id="refresh" type="button">刷新愿望列表</button>
@@ -77,12 +77,20 @@ button:hover{filter:brightness(1.1)}
     <section>
       <h2>内容管理</h2>
       <label for="kind">内容类型</label><select id="kind"><option value="wish">愿望</option><option value="comment">留言</option></select>
-      <label for="filter-status">显示状态</label><select id="filter-status"><option value="">全部</option><option value="visible">公开</option><option value="hidden">隐藏</option></select>
-      <button id="prev" disabled>上一页</button><span id="page-label">第 1 页</span><button id="next" disabled>下一页</button>
+      <label for="filter-status">显示状态</label><select id="filter-status"><option value="">全部</option><option value="visible">公开</option><option value="hidden">隐藏</option><option value="deleted">回收站</option></select>
+      <div class="fields"><input id="search" placeholder="搜索昵称或内容"><input id="date-from" type="date" aria-label="开始日期"><input id="date-to" type="date" aria-label="结束日期"></div>
+<button id="search-run">搜索</button><button id="search-clear" class="secondary">清除条件</button>
+<p><label><input type="checkbox" id="select-all">全选本页</label> <span id="selection">已选0条</span></p><div id="bulk"><button data-operation="hidden">批量隐藏</button><button data-operation="visible">批量公开</button><button data-operation="trash">移入回收站</button><button data-operation="restore">恢复</button><button data-operation="purge" class="danger">永久删除</button></div><button id="prev" disabled>上一页</button><span id="page-label">第 1 页</span><button id="next" disabled>下一页</button>
     </section><div id="items"></div>
+<section><h2>星空设置</h2><form id="settings-form"><p><label><input type="checkbox" id="wishEnabled">允许许愿</label> <label><input type="checkbox" id="commentEnabled">允许留言</label> <label><input type="checkbox" id="likeEnabled">允许点赞</label></p>
+<div class="fields"><label>愿望最多字数<input id="wishMax" type="number" min="2" max="1000" required></label><label>留言最多字数<input id="commentMax" type="number" min="2" max="2000" required></label></div>
+<div class="fields"><label>许愿间隔（秒）<input id="wishInterval" type="number" min="1" max="86400" required></label><label>留言间隔（秒）<input id="commentInterval" type="number" min="1" max="86400" required></label><label>点赞间隔（秒）<input id="likeInterval" type="number" min="1" max="86400" required></label></div>
+<label>星空公告<textarea id="announcement" maxlength="1000" placeholder="留空则不显示公告"></textarea></label><button type="submit">保存设置</button></form></section>
+<section><h2>备份与恢复</h2><p class="small">包含愿望、留言、回收站、置顶、回复和星空设置，不含管理员密码或登录信息。</p><button id="backup">导出完整备份</button><input id="backup-file" type="file" accept="application/json,.json"><button id="preview-import">检查备份</button><p id="backup-info" role="status"></p><label><input id="restore-settings" type="checkbox">同时恢复星空设置</label><button id="import" disabled>确认恢复（重复ID跳过）</button><p class="small">中途失败可重新导入，已导入内容会跳过。</p></section>
   </div>
 </main>
-<script src="/js/yun-stars-admin.js"></script>
+<script src="/js/yun-stars-admin.js?v=20261025-2"></script>
 </body>
 </html>
+
 

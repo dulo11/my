@@ -1,3 +1,5 @@
+import {ensureSchema,VERSION} from '../_lib/schema.js';
+import {manage} from '../_lib/manage.js';
 import {json,readBody,sameOrigin,moderate,failure,rate} from '../_lib/stars.js';
 // Starry-space admin: D1-verified, one-time ownership bootstrap.
 // Never place setup codes or administrator passwords in the source repository.
@@ -61,22 +63,18 @@ async function loginBucket(env, request) {
   return 'admin-failure:' + hash + ':';
 }
 export async function onRequest({request, env}) {
+  let stage='request';
   try {
     const url = new URL(request.url);
     const action = url.searchParams.get('action') || 'me';
-    if (request.method === 'GET' && action === 'health') {
-      return json({
-        wishDb: !!env.WISH_DB,
-        starCache: !!env.STAR_CACHE,
-        adminToken: typeof env.STAR_ADMIN_TOKEN === 'string' && !!env.STAR_ADMIN_TOKEN,
-        adminTokenRequired: false,
-        adminAuth: 'd1-verified-bootstrap',
-        dbQueryable: !!env.WISH_DB?.prepare,
-        checkedAt: new Date().toISOString()
-      });
-    }
     if (!env.WISH_DB) return json({error:'缺少 D1 数据库绑定 WISH_DB'}, 503);
     const db = env.WISH_DB;
+    stage='schema';await ensureSchema(db);
+    if(request.method==='GET'&&action==='health'){
+      stage='diagnostic-query';await db.prepare('SELECT bucket FROM star_limits_v2 LIMIT 1').first();
+      stage='diagnostic-crypto';await passwordHash('diagnostic','public-test');
+      return json({ok:true,database:true,crypto:true,cache:!!env.STAR_CACHE,version:VERSION});
+    }
 
     if (request.method === 'GET' && action === 'me') {
       await ensureSettings(db);
@@ -87,11 +85,12 @@ export async function onRequest({request, env}) {
 
     if (request.method === 'GET' && action === 'list') {
       if (!(await sessionValid(request, db))) return json({error:'请先登录'},401);
-      return await adminList(db, url.searchParams);
+      return await manage(db,'list',Object.fromEntries(url.searchParams));
     }
     if (request.method !== 'POST') return json({error:'方法不支持'}, 405);
     sameOrigin(request);
-    const b = await readBody(request);
+    stage='request-body';
+    const b = await readBody(request);stage=action;
     const password = String(b.password || '');
 
     if (action === 'setup') {
@@ -121,19 +120,21 @@ export async function onRequest({request, env}) {
     }
 
     if (action === 'login') {
-      await rate(db, request, 'admin-login', 2);
+      stage='login-rate';await rate(db, request, 'admin-login', 2);
       const key = await loginBucket(env, request);
-      const attempts = (await db.prepare('SELECT COUNT(*) AS count FROM star_rate_limits WHERE bucket LIKE ? AND expires_at>?').bind(key+'%',Date.now()).first()).count;
+      const attempts = (await db.prepare('SELECT COUNT(*) AS count FROM star_limits_v2 WHERE bucket>=? AND bucket<? AND expires_at>?').bind(key,key+'\uffff',Date.now()).first()).count;
       if (attempts >= 8) return json({error:'尝试过多，请15分钟后再试'}, 429);
+      stage='login-password';
       const salt = await setting(db, 'password_salt');
       const storedHash = await setting(db, 'password_hash');
       const ok = salt && storedHash && password.length <= 4096 &&
         equal(await passwordHash(password, salt), storedHash);
       if (!ok) {
-        await db.prepare('INSERT INTO star_rate_limits(bucket,expires_at) VALUES(?,?)').bind(key+crypto.randomUUID(),Date.now()+900000).run();
+        await db.prepare('INSERT INTO star_limits_v2(bucket,expires_at) VALUES(?,?)').bind(key+crypto.randomUUID(),Date.now()+900000).run();
         return json({error:'密码错误，或管理员尚未初始化'}, 403);
       }
-      await db.prepare('DELETE FROM star_rate_limits WHERE bucket LIKE ?').bind(key+'%').run();
+      stage='login-session';
+      await db.prepare('DELETE FROM star_limits_v2 WHERE bucket>=? AND bucket<?').bind(key,key+'\uffff').run();
       const nonce = await setting(db, 'session_nonce');
       const secret = await setting(db, 'session_secret');
       if (!nonce || !secret) return json({error:'会话密钥尚未初始化'}, 503);
@@ -162,27 +163,14 @@ export async function onRequest({request, env}) {
       ]);
       return json({ok:true}, 200, {'set-cookie':setCookie('', 0)});
     }
-    if (action === 'list') return await adminList(db, new URLSearchParams(b));
+    const managed=await manage(db,action,b);if(managed)return managed;
     if (action === 'moderate') {
       await moderate(db,b);
       return json({ok:true});
     }
     return json({error:'操作不支持'}, 404);
   } catch (error) {
-    return failure(error);
+    return failure(error,stage);
   }
 }
 
-
-async function adminList(db, params) {
-  const kind=params.get('kind')==='comment'?'comment':'wish';
-  const status=params.get('status');
-  const raw=Number(params.get('page')||1);
-  const page=Number.isFinite(raw)?Math.max(1,Math.min(100000,Math.floor(raw))):1,size=50;
-  const table=kind==='comment'?'star_comments':'star_wishes';
-  const columns=kind==='comment'?'id,wish_id,nickname,content,created_at,status':'id,nickname,content,created_at,status,likes';
-  const filter=['visible','hidden'].includes(status)?' WHERE status=?':'';
-  const args=filter?[status]:[];
-  const rows=await db.prepare('SELECT '+columns+' FROM '+table+filter+' ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?').bind(...args,size+1,(page-1)*size).all();
-  return json({items:(rows.results||[]).slice(0,size),hasMore:(rows.results||[]).length>size,page,kind});
-}

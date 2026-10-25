@@ -26,7 +26,8 @@
   const petals = [];
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const mobile = window.matchMedia('(max-width: 768px)');
-  const PETAL_COUNT = mobile.matches ? 12 : 35;
+  const count=()=>{try{return Math.min(200,Math.max(1,Number(document.body.dataset.yunParticles||localStorage.getItem('yun-particles-'+(mobile.matches?'mobile':'desktop')))||(mobile.matches?12:35)))}catch{return mobile.matches?12:35}};
+  const PETAL_COUNT=count();
 
   function newPetal() {
     return {
@@ -76,14 +77,15 @@
     schedule();
   }
   function schedule() {
-    if (frameId === null && !document.hidden && !reducedMotion.matches && (!document.body.dataset.yunEffect || document.body.dataset.yunEffect === "sakura")) frameId = requestAnimationFrame(tick);
+    if (frameId === null && !document.hidden && !reducedMotion.matches && document.body.dataset.yunPowerSave!=='true' && (!document.body.dataset.yunEffect || document.body.dataset.yunEffect === "sakura")) frameId = requestAnimationFrame(tick);
   }
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && frameId !== null) { cancelAnimationFrame(frameId); frameId = null; }
     else schedule();
   });
   const resume=()=>{if(frameId!==null){cancelAnimationFrame(frameId);frameId=null}ctx.clearRect(0,0,innerWidth,innerHeight);schedule()};
-  document.addEventListener('yun:effect',resume);reducedMotion.addEventListener('change',resume);
+  document.addEventListener('yun:density',()=>{petals.length=0;for(let i=0;i<count();i++)petals.push(newPetal());resume()});document.addEventListener('yun:effect',()=>{if(petals.length!==count()){petals.length=0;for(let i=0;i<count();i++)petals.push(newPetal())}resume()});reducedMotion.addEventListener('change',resume);
   schedule();
 })();
+
 
