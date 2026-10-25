@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>星空管理后台 · 雲</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 80% 5%,#28365e 0,transparent 48%),#0a1023;color:#eef4ff;min-height:100vh;padding:24px 14px}
+main{max-width:860px;margin:0 auto}
+h1{font-size:clamp(1.55rem,6vw,2.4rem);margin:20px 0 6px}
+h2{font-size:1.28rem;margin-top:0}
+a{color:#9dcaff}
+section,article{background:rgba(30,43,76,.95);border:1px solid #42537a;border-radius:16px;padding:20px;margin:16px 0;box-shadow:0 8px 24px #0002}
+article{background:#17243f;overflow-wrap:anywhere}
+input,textarea,select,button{font:inherit;max-width:100%}
+input,textarea,select{display:block;width:100%;padding:12px;border-radius:10px;background:#0c1630;color:#f2f7ff;border:1px solid #53658f;margin:10px 0}
+textarea{height:106px;resize:vertical;font-family:ui-monospace,monospace;font-size:.81rem;word-break:break-all}
+input:focus,textarea:focus{outline:2px solid #86b7ff}
+button{cursor:pointer;border:0;border-radius:10px;padding:11px 17px;background:#4384e2;color:#fff;font-weight:600;margin:5px 8px 5px 0}
+button.secondary{background:#354b70}
+button:hover{filter:brightness(1.1)}
+.steps{line-height:1.85;padding-left:23px}
+.hint{color:#bbc9e7;line-height:1.7}
+.small{font-size:.88rem;color:#bdcbe3}
+#notice{min-height:24px;color:#ffe0a5;font-weight:600;overflow-wrap:anywhere}
+[hidden]{display:none!important}input[type=checkbox]{display:inline-block;width:auto;margin:0 6px 0 0}button:disabled{opacity:.55;cursor:wait}.danger{background:#9b4052}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stats p{margin:0;padding:12px;background:#101d39;border-radius:10px}.fields label{flex:1;min-width:100px}.fields label input{width:100%}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem}.item-actions{display:flex;flex-wrap:wrap}
+@media(min-width:720px){.fields{display:flex;gap:12px}.fields input{width:50%}}
+</style>
+</head>
+<body>
+<main>
+  <p><a href="/stars/">← 返回星空</a>　<a href="/">返回博客</a></p>
+  <h1>🌌 星空管理后台</h1>
+  <p class="hint">管理愿望与留言，筛选、隐藏和恢复内容。管理员密码与会话仅保存在自己的 D1 数据库中。</p>
+  <p id="notice" role="status" aria-live="polite"></p><p class="small">版本 <span id="version">2026.10.25.2</span> <button id="diagnose" class="secondary">检查连接</button></p><pre id="diagnostic" hidden></pre>
+  <section id="setup" hidden>
+    <h2>首次创建管理员</h2>
+    <p><strong>不再需要 STAR_ADMIN_TOKEN，也不用 Termux 或 Wrangler。</strong></p>
+    <p>为防止陌生人抢先注册，第一次设置必须证明你拥有 Cloudflare D1 数据库。</p>
+    <ol class="steps">
+      <li>点击「复制授权 SQL」。</li>
+      <li>打开 Cloudflare → D1 → <b>mywangzhan</b> → 控制台，粘贴这条 SQL 并执行。</li>
+      <li>返回本页，设置自行决定长度的管理员密码，点击「创建管理员」。</li>
+    </ol>
+    <p class="small" id="setup-ready"></p>
+    <label for="setup-sql">一次性授权 SQL（只需在 D1 控制台执行一次）</label>
+    <textarea id="setup-sql" readonly spellcheck="false"></textarea>
+    <button id="copy-sql" type="button">📋 复制授权 SQL</button>
+    <button id="renew" type="button" class="secondary">重新生成授权</button>
+    <label for="setup-code">本次授权码（自动生成，不要发送给别人）</label>
+    <input id="setup-code" type="password" autocomplete="off" spellcheck="false" placeholder="自动生成的授权码">
+    <label for="initial">新管理员密码</label>
+    <input id="initial" type="password" autocomplete="new-password" maxlength="4096" placeholder="位数自行决定">
+    <button id="init" type="button">✅ 创建管理员</button>
+    <p class="small">授权码保存在当前浏览器标签页中，刷新后可以继续；关闭标签页或重新生成授权后，需要执行新 SQL。初始化完成后授权立即作废。</p>
+  </section>
+  <section id="login" hidden>
+    <h2>管理员登录</h2>
+    <input id="password" type="password" autocomplete="current-password" placeholder="管理员密码">
+    <button id="enter" type="button">登录（30天有效）</button>
+  </section>
+  <div id="panel" hidden><section><h2>后台首页</h2><div id="stats" class="stats"></div><p class="small">今日新增按北京时间统计。</p></section>
+    <section>
+      <h2>管理操作</h2>
+      <button id="refresh" type="button">刷新愿望列表</button>
+      <button id="logout" type="button" class="secondary">退出登录</button>
+      <h3>修改管理员密码</h3>
+      <div class="fields">
+        <input id="old" type="password" autocomplete="current-password" placeholder="当前密码">
+        <input id="new" type="password" autocomplete="new-password" maxlength="4096" placeholder="新密码（位数自行决定）">
+      </div>
+      <button id="change" type="button">修改密码</button>
+    </section>
+    <section>
+      <h2>内容管理</h2>
+      <label for="kind">内容类型</label><select id="kind"><option value="wish">愿望</option><option value="comment">留言</option></select>
+      <label for="filter-status">显示状态</label><select id="filter-status"><option value="">全部</option><option value="visible">公开</option><option value="hidden">隐藏</option><option value="deleted">回收站</option></select>
+      <div class="fields"><input id="search" placeholder="搜索昵称或内容"><input id="date-from" type="date" aria-label="开始日期"><input id="date-to" type="date" aria-label="结束日期"></div>
+<button id="search-run">搜索</button><button id="search-clear" class="secondary">清除条件</button>
+<p><label><input type="checkbox" id="select-all">全选本页</label> <span id="selection">已选0条</span></p><div id="bulk"><button data-operation="hidden">批量隐藏</button><button data-operation="visible">批量公开</button><button data-operation="trash">移入回收站</button><button data-operation="restore">恢复</button><button data-operation="purge" class="danger">永久删除</button></div><button id="prev" disabled>上一页</button><span id="page-label">第 1 页</span><button id="next" disabled>下一页</button>
+    </section><div id="items"></div>
+<section><h2>星空设置</h2><form id="settings-form"><p><label><input type="checkbox" id="wishEnabled">允许许愿</label> <label><input type="checkbox" id="commentEnabled">允许留言</label> <label><input type="checkbox" id="likeEnabled">允许点赞</label></p>
+<div class="fields"><label>愿望最多字数<input id="wishMax" type="number" min="2" max="1000" required></label><label>留言最多字数<input id="commentMax" type="number" min="2" max="2000" required></label></div>
+<div class="fields"><label>许愿间隔（秒）<input id="wishInterval" type="number" min="1" max="86400" required></label><label>留言间隔（秒）<input id="commentInterval" type="number" min="1" max="86400" required></label><label>点赞间隔（秒）<input id="likeInterval" type="number" min="1" max="86400" required></label></div>
+<label>星空公告<textarea id="announcement" maxlength="1000" placeholder="留空则不显示公告"></textarea></label><button type="submit">保存设置</button></form></section>
+<section><h2>备份与恢复</h2><p class="small">包含愿望、留言、回收站、置顶、回复和星空设置，不含管理员密码或登录信息。</p><button id="backup">导出完整备份</button><input id="backup-file" type="file" accept="application/json,.json"><button id="preview-import">检查备份</button><p id="backup-info" role="status"></p><label><input id="restore-settings" type="checkbox">同时恢复星空设置</label><button id="import" disabled>确认恢复（重复ID跳过）</button><p class="small">中途失败可重新导入，已导入内容会跳过。</p></section>
+  </div>
+</main>
+<script src="/js/yun-stars-admin.js?v=20261025-2"></script>
+</body>
+</html>
+
+

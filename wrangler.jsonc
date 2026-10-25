@@ -1,0 +1,35 @@
+{
+  "name": "my",
+  "pages_build_output_dir": "./public",
+  "compatibility_date": "2026-10-24",
+  "kv_namespaces": [
+    {
+      "binding": "STAR_CACHE",
+      "id": "7fa43878ed424ba7ab0d7414c7766f0d"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "WISH_DB",
+      "database_name": "mywangzhan",
+      "database_id": "9f5644fa-dc41-4a7a-9a69-9612643d4c39"
+    }
+  ],
+  "env": {
+    "preview": {
+      "kv_namespaces": [
+        {
+          "binding": "STAR_CACHE",
+          "id": "7fa43878ed424ba7ab0d7414c7766f0d"
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "WISH_DB",
+          "database_name": "mywangzhan",
+          "database_id": "9f5644fa-dc41-4a7a-9a69-9612643d4c39"
+        }
+      ]
+    }
+  }
+}

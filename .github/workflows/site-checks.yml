@@ -1,0 +1,22 @@
+name: Site checks
+on:
+  push:
+    branches: [master, 'feature/themes-stars-toolbox']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
+
+      - run: npm install --no-save --no-audit --no-fund wrangler@4.152.0
+      - run: npx wrangler pages functions build functions --outdir .test-worker
+      - run: WORKER_BUNDLE=.test-worker/index.js node tests/runtime.cjs

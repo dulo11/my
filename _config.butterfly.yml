@@ -28,8 +28,10 @@ background:
 inject:
   head:
     - <link rel="stylesheet" href="/css/custom.css">
+    - <link rel="stylesheet" href="/css/yun-extras.css">
   bottom:
-    - <script src="/js/sakura.js"></script>
+    - <script src="/js/sakura.js?v=20261025-2"></script>
+    - <script src="/js/yun-themes.js?v=20261025-2"></script>
 footer:
   owner:
     enable: true
@@ -62,3 +64,11 @@ subtitle:
   - "Português: Encontramo-nos quando as nuvens se erguem, e sentimos saudade quando o vento passa."
   - "Русский: Мы встречаемся, когда поднимаются облака, и вспоминаем друг друга, когда проходит ветер."
   - "العربية: نلتقي حين تنهض الغيوم، ونشتاق حين يمرّ النسيم."
+
+# 新增页面入口
+menu:
+  首页: / || fas fa-home
+  工具箱: /tools/ || fas fa-toolbox
+  星空空间: /stars/ || fas fa-star
+  主题中心: /themes/ || fas fa-palette
+
