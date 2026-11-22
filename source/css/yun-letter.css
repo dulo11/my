@@ -9,7 +9,7 @@
   --yl-border: rgba(255,255,255,.33);
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  overflow: clip;
   margin: 12px auto 28px;
   max-width: 1040px;
   border-radius: 28px;
@@ -24,7 +24,7 @@
 #yun-letter[data-scene="night"] { --yl-a:#303d86; --yl-b:#6d51bc; --yl-c:#bdc8ff; }
 #yun-letter *, #yun-letter *::before, #yun-letter *::after { box-sizing: border-box; }
 #yun-letter .yun-letter__progress {
-  position: absolute; z-index: 4; left: 0; top: 0; height: 5px;
+  position: sticky; z-index: 4; left: 0; top: 0; height: 5px; margin-bottom: -5px;
   width: 100%; transform-origin: left center; transform: scaleX(0);
   background: linear-gradient(90deg,#fff,#ffd2f0,#f9d58c);
   box-shadow: 0 0 14px rgba(255,255,255,.7);
