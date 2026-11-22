@@ -3,6 +3,7 @@ import {sessionValid} from "./star-admin.js";
 const TYPES=["person","object","quote","memory","other"];
 const STATE=["pending","visible","hidden"];
 const MAX_UPLOAD=165000;
+const ready=new WeakMap();
 const ddl=[
 "CREATE TABLE IF NOT EXISTS hobby_posts (id TEXT PRIMARY KEY,nickname TEXT NOT NULL,category TEXT NOT NULL,title TEXT NOT NULL,body TEXT NOT NULL,image_webp TEXT,status TEXT NOT NULL DEFAULT 'pending',pinned INTEGER NOT NULL DEFAULT 0,likes INTEGER NOT NULL DEFAULT 0,reports INTEGER NOT NULL DEFAULT 0,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL)",
 "CREATE INDEX IF NOT EXISTS idx_hobby_public ON hobby_posts(status,pinned,created_at)",
@@ -20,7 +21,10 @@ const enc=new TextEncoder();
 const hex=buffer=>Array.from(new Uint8Array(buffer)).map(x=>x.toString(16).padStart(2,"0")).join("");
 async function digest(s){return hex(await crypto.subtle.digest("SHA-256",enc.encode(s)));}
 async function ipKey(request) {return digest(request.headers.get("CF-Connecting-IP")||"unknown");}
-async function schema(db){await db.batch(ddl.map(q=>db.prepare(q)));}
+async function schema(db){
+ if(!ready.has(db))ready.set(db,db.batch(ddl.map(q=>db.prepare(q))).catch(err=>{ready.delete(db);throw err;}));
+ await ready.get(db);
+}
 async function readBody(req){
  if(!/^application\/json/i.test(req.headers.get("content-type")||""))throw new Bad(415,"需要 JSON 请求");
  if(Number(req.headers.get("content-length")||0)>MAX_UPLOAD)throw new Bad(413,"内容超过上传限制");
@@ -80,6 +84,13 @@ export async function onRequest({request,env}){
    const items=(await db.prepare("SELECT id,nickname,category,title,body,CASE WHEN image_webp IS NULL THEN 0 ELSE 1 END AS hasImage,status,pinned,likes,reports,created_at FROM hobby_posts WHERE (?='all' OR status=?) ORDER BY created_at DESC LIMIT 31 OFFSET ?").bind(status,status,(page-1)*30).all()).results||[];
    const counts=(await db.prepare("SELECT status,COUNT(*) AS total FROM hobby_posts GROUP BY status").all()).results||[];
    return ok({items:items.slice(0,30),page,hasMore:items.length>30,counts});
+  }
+  if(request.method==="GET"&&action==="admin-reports"){
+   await requireAdmin(request,db);
+   const id=url.searchParams.get("id");
+   if(!uuid(id))throw new Bad(400,"投稿编号不正确");
+   const items=(await db.prepare("SELECT reason,created_at FROM hobby_reports WHERE post_id=? ORDER BY created_at DESC LIMIT 30").bind(id).all()).results||[];
+   return ok({items});
   }
   if(request.method!=="POST")return ok({error:"不支持的请求方法"},405);
   sameOrigin(request);
