@@ -28,6 +28,23 @@
 - 手机上仍可能看到少量由旧 104px 像素源产生的原始细节损失，WebP 无法凭空增加原图纹理。若以后需要完全高清，可将生成脚本改为使用更高分辨率的原始动图。
 - 新 `.github/workflows/repair-avatar-assets.yml` 用于在更新生成脚本后自动构建动画文件（会提交生成的资源）；无需在访客浏览器运行 Python。
 
+## 最新：高清矢量头像（替代模糊 WebP）
+
+此前的 `*-smooth.webp` 是由 104px GIF 放大并混合生成的，放大并不能增加清晰度，反而产生重影。
+因此已经停止在网站上引用这些放大插帧版本。
+
+当前作者卡片改为以下四张 **320×320 矢量 SVG（不依赖位图像素）**：
+
+- `source/img/avatar/star-vector.svg` — 紫晶星芒
+- `source/img/avatar/sakura-vector.svg` — 水晶樱花
+- `source/img/avatar/moon-vector.svg` — 月亮星空
+- `source/img/avatar/heart-vector.svg` — 爱心云朵
+
+这些是对原四款主题的矢量重新绘制，**不是原 GIF 的逐像素还原**。矢量图中的装饰性光点可以缓慢闪烁，图案本体固定不跳动。访问者只有完整刷新网页时才切换到下一款；不再每 4 秒自动切换整张图片。
+
+当前通过 `_config.butterfly.yml` 加载 `/js/yun-avatar-cycle.js?v=20261123-3`；默认头像是 `/img/avatar/star-vector.svg`。
+旧 GIF 和 WebP 文件仍保留在仓库，方便以后切换或回滚。
+
 ## 域名双入口
 
 - 主站：`https://966405.xyz/`
