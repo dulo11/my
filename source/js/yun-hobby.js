@@ -4,7 +4,7 @@
  const $=id=>document.getElementById(id);
  const API="/api/hobby";
  const categories={person:"🫶 喜欢的人",object:"🎁 喜欢的物",quote:"📖 喜爱的句子",memory:"🌿 故事回忆",other:"🌈 其他珍藏"};
- const state={category:"all",sort:"latest",page:1,loading:false};
+ const state={category:"all",sort:"latest",page:1,q:"",loading:false};
  const form=$("hobby-form"),file=$("image-upload"),grid=$("hobby-list");
  const status=(id,message)=>{$(id).textContent=message||"";};
  const el=(tag,className,text)=>{
@@ -34,6 +34,7 @@
  }
  function itemCard(item){
   const card=el("article","hobby-card");
+  card.dataset.postId=item.id;
   if(item.hasImage){
    const img=el("img","card-photo");
    img.loading="lazy";img.decoding="async";
@@ -47,7 +48,15 @@
   if(item.pinned)top.append(el("span","card-pin","✦ 站长精选"));
   inner.append(top,el("h3","",item.title),el("p","card-body",item.body));
   const foot=el("div","card-foot");
-  const by=el("span","by","@ "+item.nickname+" · "+dateOf(item.created_at));
+  const by=el("span","by");
+  if(item.ownerId){
+   const author=el("button","card-author","@ "+item.nickname);
+   author.type="button";
+   author.addEventListener("click",()=>document.dispatchEvent(new CustomEvent("yun-hobby-open-profile",{detail:{id:item.ownerId}})));
+   by.append(author,document.createTextNode(" · "+dateOf(item.created_at)));
+  }else by.textContent="@ "+item.nickname+" · "+dateOf(item.created_at);
+  const view=el("button","card-open","💬 查看 · 收藏");view.type="button";
+  view.addEventListener("click",()=>document.dispatchEvent(new CustomEvent("yun-hobby-open-post",{detail:{id:item.id}})));
   const like=el("button","","♡ "+Number(item.likes||0));
   like.type="button";like.setAttribute("aria-label","喜欢这条分享");
   like.addEventListener("click",async()=>{
@@ -69,7 +78,7 @@
    catch(e){status("list-status",e.message);}
    finally{report.disabled=false;}
   });
-  foot.append(by,like,report);inner.append(foot);card.append(inner);
+  foot.append(by,view,like,report);inner.append(foot);card.append(inner);
   return card;
  }
  async function load(){
@@ -77,7 +86,7 @@
   state.loading=true;
   status("list-status","正在加载分享…");
   try{
-   const data=await api("list",undefined,{category:state.category,sort:state.sort,page:state.page});
+   const data=await api("list",undefined,{category:state.category,sort:state.sort,page:state.page,q:state.q});
    grid.replaceChildren();
    for(const post of data.items)grid.append(itemCard(post));
    if(!data.items.length){
@@ -105,11 +114,14 @@
  });
  $("sort").addEventListener("change",e=>{state.sort=e.target.value;state.page=1;load();});
  $("refresh").addEventListener("click",load);
+ $("hobby-search-run").addEventListener("click",()=>{state.q=$("hobby-search").value.trim().slice(0,80);state.page=1;$("hobby-search-clear").hidden=!state.q;load();});
+ $("hobby-search").addEventListener("keydown",e=>{if(e.key==="Enter"){$("hobby-search-run").click();}});
+ $("hobby-search-clear").addEventListener("click",()=>{$("hobby-search").value="";state.q="";state.page=1;$("hobby-search-clear").hidden=true;load();});
  $("prev").addEventListener("click",()=>{if(state.page>1){state.page--;load();}});
  $("next").addEventListener("click",()=>{if(!$("next").disabled){state.page++;load();}});
  const textarea=form.elements.namedItem("body");
  textarea.addEventListener("input",()=>{$("char-count").textContent=textarea.value.length+" / 600";});
- let previewURL=null;
+ let previewURL=null,editId=null;
  function clearImage(){
   if(previewURL)URL.revokeObjectURL(previewURL);
   previewURL=null;file.value="";$("photo-preview").hidden=true;$("preview-img").removeAttribute("src");
@@ -160,6 +172,27 @@
   }
   throw Error("图片仍然过大，请换张简单一些的照片。");
  }
+ const resetEdit=()=>{
+  editId=null;$("hobby-form-title").textContent="✎ 我的喜欢";
+  $("hobby-edit-tip").hidden=true;$("edit-cancel").hidden=true;
+  $("remove-old-photo-label").hidden=true;$("remove-old-photo").checked=false;
+  $("submit").textContent="✦ 提交分享";
+ };
+ document.addEventListener("yun-hobby-edit",e=>{
+  const post=e.detail;if(!post?.id)return;
+  editId=post.id;form.elements.namedItem("title").value=post.title||"";
+  form.elements.namedItem("body").value=post.body||"";
+  form.elements.namedItem("category").value=post.category||"other";
+  $("char-count").textContent=(post.body||"").length+" / 600";
+  clearImage();
+  $("hobby-form-title").textContent="✎ 编辑自己的投稿";
+  $("hobby-edit-tip").hidden=false;$("edit-cancel").hidden=false;
+  $("remove-old-photo-label").hidden=!post.hasImage;
+  $("remove-old-photo").checked=false;
+  $("post-box").scrollIntoView({behavior:"smooth",block:"start"});
+  form.elements.namedItem("title").focus();
+ });
+ $("edit-cancel").addEventListener("click",()=>{form.reset();clearImage();resetEdit();$("char-count").textContent="0 / 600";});
  form.addEventListener("submit",async e=>{
   e.preventDefault();if(!form.reportValidity())return;
   const title=form.elements.namedItem("title").value.trim();
@@ -170,12 +203,14 @@
   const submit=$("submit");submit.disabled=true;submit.textContent="正在上传…";
   try{
    const image=await compactPhoto(file.files?.[0]);
-   const response=await api("submit",{title,body,nickname,category,image});
+   const data={title,body,nickname,category,image};
+   if(editId){data.id=editId;data.removeImage=$("remove-old-photo").checked;}
+   const response=await api(editId?"edit":"submit",data);
    status("form-status",response.message||"投稿成功，等待审核。");
-   form.reset();clearImage();$("char-count").textContent="0 / 600";
+   form.reset();clearImage();resetEdit();$("char-count").textContent="0 / 600";
    document.dispatchEvent(new CustomEvent("yun-hobby-submitted"));
   }catch(err){status("form-status",err.message||"上传失败，请稍后再试。");}
-  finally{submit.disabled=false;submit.textContent="✦ 提交分享";}
+  finally{submit.disabled=false;submit.textContent=editId?"保存修改并送审":"✦ 提交分享";}
  });
  load();
 })();
