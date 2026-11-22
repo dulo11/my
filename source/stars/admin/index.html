@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>星空管理后台 · 雲</title>
+<title>统一管理中心 · 雲</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box}
@@ -28,13 +28,27 @@ button:hover{filter:brightness(1.1)}
 #notice{min-height:24px;color:#ffe0a5;font-weight:600;overflow-wrap:anywhere}
 [hidden]{display:none!important}input[type=checkbox]{display:inline-block;width:auto;margin:0 6px 0 0}button:disabled{opacity:.55;cursor:wait}.danger{background:#9b4052}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stats p{margin:0;padding:12px;background:#101d39;border-radius:10px}.fields label{flex:1;min-width:100px}.fields label input{width:100%}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem}.item-actions{display:flex;flex-wrap:wrap}
 @media(min-width:720px){.fields{display:flex;gap:12px}.fields input{width:50%}}
+
+.unified-tabs{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0 20px}
+.unified-tabs button{background:#334464;border:1px solid #556e9a;border-radius:99px;padding:12px 18px}
+.unified-tabs button[aria-pressed="true"]{background:#87bbff;color:#112342;box-shadow:0 3px 20px #6398f755}
+#hobby-panel section{background:#1b2a48}
+#hobby-panel article{padding:17px;background:#16223b}
+#hobby-panel .hobby-actions{display:flex;gap:5px;flex-wrap:wrap}
+#hobby-panel .hobby-actions button{padding:8px 11px;font-size:13px}
+#hobby-panel .hobby-actions .danger{background:#963956}
+#hobby-panel .hobby-meta{font-size:.83rem;color:#bfcde5;line-height:1.8;overflow-wrap:anywhere}
+#hobby-panel .hobby-body{line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere}
+#hobby-panel .hobby-image{display:block;max-width:230px;max-height:185px;object-fit:cover;border-radius:12px;margin:10px 0}
+.hobby-admin-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hobby-admin-controls select{width:auto;min-width:155px}
 </style>
 </head>
 <body>
 <main>
   <p><a href="/stars/">← 返回星空</a>　<a href="/">返回博客</a></p>
-  <h1>🌌 星空管理后台</h1>
-  <p class="hint">管理愿望与留言，筛选、隐藏和恢复内容。管理员密码与会话仅保存在自己的 D1 数据库中。</p>
+  <h1>🛡 雲 · 统一管理中心</h1>
+  <p class="hint">统一管理星空愿望、访客留言和爱好板投稿。管理员密码只需设置一次，两套管理共用安全登录会话。</p>
   <p id="notice" role="status" aria-live="polite"></p><p class="small">版本 <span id="version">2026.10.25.2</span> <button id="diagnose" class="secondary">检查连接</button></p><pre id="diagnostic" hidden></pre>
   <section id="setup" hidden>
     <h2>首次创建管理员</h2>
@@ -62,7 +76,12 @@ button:hover{filter:brightness(1.1)}
     <input id="password" type="password" autocomplete="current-password" placeholder="管理员密码">
     <button id="enter" type="button">登录（30天有效）</button>
   </section>
-  <div id="panel" hidden><section><h2>后台首页</h2><div id="stats" class="stats"></div><p class="small">今日新增按北京时间统计。</p></section>
+  <div id="panel" hidden>
+  <nav class="unified-tabs" aria-label="管理分类">
+    <button type="button" id="tab-stars" aria-pressed="true">🌌 星空愿望与留言</button>
+    <button type="button" id="tab-hobby" aria-pressed="false">💗 爱好板投稿审核</button>
+  </nav>
+  <div id="stars-panel"><section><h2>后台首页</h2><div id="stats" class="stats"></div><p class="small">今日新增按北京时间统计。</p></section>
     <section>
       <h2>管理操作</h2>
       <button id="refresh" type="button">刷新愿望列表</button>
@@ -88,8 +107,34 @@ button:hover{filter:brightness(1.1)}
 <label>星空公告<textarea id="announcement" maxlength="1000" placeholder="留空则不显示公告"></textarea></label><button type="submit">保存设置</button></form></section>
 <section><h2>备份与恢复</h2><p class="small">包含愿望、留言、回收站、置顶、回复和星空设置，不含管理员密码或登录信息。</p><button id="backup">导出完整备份</button><input id="backup-file" type="file" accept="application/json,.json"><button id="preview-import">检查备份</button><p id="backup-info" role="status"></p><label><input id="restore-settings" type="checkbox">同时恢复星空设置</label><button id="import" disabled>确认恢复（重复ID跳过）</button><p class="small">中途失败可重新导入，已导入内容会跳过。</p></section>
   </div>
+  <div id="hobby-panel" hidden>
+    <section>
+      <h2>💗 爱好板 · 投稿管理</h2>
+      <p class="hint">所有投稿需要审核后才公开。这里可以查看照片、处理举报、通过、隐藏、置顶或永久删除。</p>
+      <div class="hobby-admin-controls">
+        <label for="hobby-filter">状态</label>
+        <select id="hobby-filter">
+          <option value="pending">待审核</option>
+          <option value="visible">已公开</option>
+          <option value="hidden">已隐藏</option>
+          <option value="all">全部投稿</option>
+        </select>
+        <button type="button" id="hobby-reload">刷新投稿</button>
+      </div>
+      <p id="hobby-message" role="status" aria-live="polite"></p>
+      <p id="hobby-counts" class="hint"></p>
+      <div id="hobby-items"></div>
+      <div class="hobby-admin-controls">
+        <button id="hobby-prev" type="button" class="secondary" disabled>← 上一页</button>
+        <span id="hobby-page">第 1 页</span>
+        <button id="hobby-next" type="button" class="secondary" disabled>下一页 →</button>
+      </div>
+    </section>
+  </div>
+  </div>
 </main>
-<script src="/js/yun-stars-admin.js?v=20261025-2"></script>
+<script src="/js/yun-hobby-admin-unified.js?v=20261122-3"></script>
+<script src="/js/yun-stars-admin.js?v=20261122-3"></script>
 </body>
 </html>
 
