@@ -18,7 +18,7 @@ toc: false
 
 <!-- more -->
 
-<link rel="stylesheet" href="/css/yun-letter.css">
+<link rel="stylesheet" href="/css/yun-letter.css?v=20261122-2">
 
 <div id="yun-letter" class="yun-letter" data-scene="dawn">
   <div class="yun-letter__progress" aria-hidden="true"></div>
@@ -136,4 +136,4 @@ toc: false
   </footer>
 </div>
 
-<script defer src="/js/yun-letter.js"></script>
+<script defer src="/js/yun-letter.js?v=20261122-2"></script>
