@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="雲的爱好板：分享你喜欢的人物、物品、句子与故事。每一种喜欢都值得被看见。">
+<meta name="theme-color" content="#181837">
+<title>爱好板 · 把喜欢留在这里 | 雲</title>
+<link rel="stylesheet" href="/css/yun-hobby.css?v=20261122-1">
+</head>
+<body>
+<div class="hobby-halo halo-one" aria-hidden="true"></div>
+<div class="hobby-halo halo-two" aria-hidden="true"></div>
+<main class="hobby-app">
+  <nav class="hobby-nav" aria-label="网站导航">
+    <a class="hobby-brand" href="/">☁ 雲 <span>· HOBBY GALAXY</span></a>
+    <div class="hobby-nav-links">
+      <a href="/">博客</a><a href="/stars/">星空空间</a><a href="/hobby/admin/">管理</a>
+    </div>
+  </nav>
+  <header class="hobby-hero">
+    <div class="hero-inner">
+      <p class="eyebrow">✦ THE THINGS WE LOVE</p>
+      <h1>把喜欢的，<br><em>留在星光里。</em></h1>
+      <p>一个可以分享喜欢的人、物、句子和故事的小小宇宙。<br>你珍藏的美好，也许刚好照亮某个路过的人。</p>
+      <div class="hero-actions">
+        <a href="#post-box" class="button primary">✎ 写下我的喜欢</a>
+        <a href="#hobby-wall" class="button ghost">看看大家喜欢什么 ↓</a>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <span class="art-orbit o1"></span><span class="art-orbit o2"></span>
+      <div class="art-center">♡</div>
+      <span class="art-float a1">✦ 诗句</span><span class="art-float a2">☼ 人物</span>
+      <span class="art-float a3">✿ 收藏</span><span class="art-float a4">♫ 回忆</span>
+    </div>
+  </header>
+
+  <section class="hobby-content" id="hobby-wall">
+    <div class="section-intro"><p class="eyebrow">COMMUNITY COLLECTION</p><h2>大家的珍藏 <span class="count" id="total">—</span></h2><p>这面墙由每一位路过的人慢慢点亮。</p></div>
+    <div class="filters" role="group" aria-label="分享分类">
+      <button type="button" class="active" data-category="all" aria-pressed="true">✨ 全部</button>
+      <button type="button" data-category="person" aria-pressed="false">🫶 喜欢的人</button>
+      <button type="button" data-category="object" aria-pressed="false">🎁 喜欢的物</button>
+      <button type="button" data-category="quote" aria-pressed="false">📖 喜爱的句子</button>
+      <button type="button" data-category="memory" aria-pressed="false">🌿 故事回忆</button>
+      <button type="button" data-category="other" aria-pressed="false">🌈 其他珍藏</button>
+    </div>
+    <div class="toolbar">
+      <label for="sort">排序：</label>
+      <select id="sort"><option value="latest">最新分享</option><option value="popular">最多喜欢</option></select>
+      <button id="refresh" class="subtle" type="button">⟳ 刷新</button>
+    </div>
+    <p id="list-status" class="feedback" role="status" aria-live="polite">正在加载爱好板…</p>
+    <div id="hobby-list" class="hobby-grid" aria-live="polite"></div>
+    <div class="pagination">
+      <button id="prev" disabled type="button">← 上一页</button>
+      <span id="page">第 1 页</span>
+      <button id="next" disabled type="button">下一页 →</button>
+    </div>
+  </section>
+
+  <section class="hobby-submit" id="post-box">
+    <div class="submit-note">
+      <p class="eyebrow">YOUR LITTLE UNIVERSE</p>
+      <h2>轮到你了，<br>分享一件喜欢的事。</h2>
+      <p>可以是一位让你心动的人、一件舍不得丢的旧物、一句读了很久的话，也可以是一段独属于你的回忆。</p>
+      <div class="tip">
+        <strong>✦ 友善约定</strong>
+        <p>禁止发布他人隐私、未经许可的私人照片、广告及攻击性内容。请尽量使用自己的照片或有权公开分享的图片。所有投稿经过管理员审核才会展示。</p>
+      </div>
+    </div>
+    <form id="hobby-form" class="hobby-form">
+      <h3>✎ 我的喜欢</h3>
+      <div class="form-row">
+        <label>我的昵称 <span>选填</span><input name="nickname" maxlength="24" placeholder="匿名收藏家" autocomplete="nickname"></label>
+        <label>分享类型 <span>必选</span><select name="category" required>
+          <option value="person">🫶 喜欢的人</option>
+          <option value="object">🎁 喜欢的物</option>
+          <option value="quote">📖 喜爱的句子</option>
+          <option value="memory">🌿 故事回忆</option>
+          <option value="other">🌈 其他珍藏</option>
+        </select></label>
+      </div>
+      <label>给它起个名字 <span>2～50 字</span><input name="title" minlength="2" maxlength="50" required placeholder="例如：一句陪我走过低谷的话"></label>
+      <label>说说为什么喜欢 <span>2～600 字</span>
+        <textarea name="body" minlength="2" maxlength="600" required rows="5" placeholder="这份喜欢，对你有什么特别意义？"></textarea>
+      </label>
+      <label>留一张小照片 <span>选填 · 自动压缩</span>
+        <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif">
+      </label>
+      <div class="photo-preview" id="photo-preview" hidden><img id="preview-img" alt="待上传图片预览"><button type="button" id="remove-photo">移除图片</button></div>
+      <p class="form-help">图片将在手机上压缩为约 100KB 以下的 WebP 缩略图后上传。限一张，原文件不超过 8MB；不支持上传视频。</p>
+      <div class="form-end"><span id="char-count">0 / 600</span><button id="submit" type="submit" class="button primary">✦ 提交分享</button></div>
+      <p id="form-status" class="feedback" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <footer class="hobby-footer"><p>愿每种真诚的喜欢都有回声。<br><strong>雲 · 爱好板</strong></p><a href="/">返回博客首页 ↑</a></footer>
+</main>
+<script defer src="/js/yun-hobby.js?v=20261122-1"></script>
+</body>
+</html>
