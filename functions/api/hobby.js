@@ -1,4 +1,5 @@
 import {sessionValid} from "./star-admin.js";
+import {ensureHobbyAuthSchema,hobbyUserFromRequest} from "../_lib/hobby-auth.js";
 /* 爱好板 · Cloudflare Pages + D1，全部投稿先审核 */
 const TYPES=["person","object","quote","memory","other"];
 const STATE=["pending","visible","hidden"];
@@ -104,10 +105,15 @@ export async function onRequest({request,env}){
    if(/https?:\/\/|www\.|(?:t\.me|bit\.ly|tinyurl\.com)/i.test(title+" "+content))
     throw new Bad(400,"为了避免广告和诈骗，暂不支持外部网址");
    const image=imageData(body.image||null);
+   await ensureHobbyAuthSchema(db);
+   const account=await hobbyUserFromRequest(request,db);
+   const displayName=account?account.display_name:nickname;
    await limit(db,request,"submit",180);
    const id=crypto.randomUUID(),now=Date.now();
-   await db.prepare("INSERT INTO hobby_posts(id,nickname,category,title,body,image_webp,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)")
-    .bind(id,nickname,category,title,content,image,now,now).run();
+   const statements=[db.prepare("INSERT INTO hobby_posts(id,nickname,category,title,body,image_webp,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)")
+     .bind(id,displayName,category,title,content,image,now,now)];
+   if(account)statements.push(db.prepare("INSERT INTO hobby_post_owners(post_id,user_id) VALUES(?,?)").bind(id,account.id));
+   await db.batch(statements);
    return ok({ok:true,id,status:"pending",message:"投稿成功，等待管理员审核后公开展示"},201);
   }
   if(action==="like"){
@@ -145,10 +151,12 @@ export async function onRequest({request,env}){
   }
   if(action==="admin-delete"){
    await requireAdmin(request,db);
+   await ensureHobbyAuthSchema(db);
    if(!uuid(body.id))throw new Bad(400,"编号不正确");
    await db.batch([
     db.prepare("DELETE FROM hobby_likes WHERE post_id=?").bind(body.id),
     db.prepare("DELETE FROM hobby_reports WHERE post_id=?").bind(body.id),
+    db.prepare("DELETE FROM hobby_post_owners WHERE post_id=?").bind(body.id),
     db.prepare("DELETE FROM hobby_posts WHERE id=?").bind(body.id)
    ]);
    return ok({ok:true});
