@@ -6,7 +6,7 @@
 <meta name="description" content="雲的爱好板：分享你喜欢的人物、物品、句子与故事。每一种喜欢都值得被看见。">
 <meta name="theme-color" content="#181837">
 <title>爱好板 · 把喜欢留在这里 | 雲</title>
-<link rel="stylesheet" href="/css/yun-hobby.css?v=20261122-1">
+<link rel="stylesheet" href="/css/yun-hobby.css?v=20261122-3">
 </head>
 <body>
 <div class="hobby-halo halo-one" aria-hidden="true"></div>
@@ -15,7 +15,11 @@
   <nav class="hobby-nav" aria-label="网站导航">
     <a class="hobby-brand" href="/">☁ 雲 <span>· HOBBY GALAXY</span></a>
     <div class="hobby-nav-links">
-      <a href="/">博客</a><a href="/stars/">星空空间</a><a href="/hobby/admin/">管理</a>
+      <a href="/">博客</a><a href="/stars/">星空空间</a><a href="/stars/admin/#hobby">管理</a>
+      <button type="button" id="account-login-open" class="account-link">登录</button>
+      <button type="button" id="account-register-open" class="account-link account-signup">注册</button>
+      <span id="account-info" class="account-user" hidden></span>
+      <button type="button" id="account-logout" class="account-link" hidden>退出</button>
     </div>
   </nav>
   <header class="hobby-hero">
@@ -60,6 +64,13 @@
     </div>
   </section>
 
+  <section class="hobby-mine" id="my-posts" hidden>
+    <div class="section-intro"><p class="eyebrow">MY COLLECTIONS</p><h2>✉ 我的投稿</h2><p>注册后发布的分享会记录在你的账号里。可查看审核状态，也可删除自己发布的内容。</p></div>
+    <div class="my-actions"><button id="my-reload" type="button" class="button ghost">⟳ 刷新我的投稿</button></div>
+    <p id="my-status" class="feedback" role="status"></p>
+    <div id="my-list" class="my-list"></div>
+  </section>
+
   <section class="hobby-submit" id="post-box">
     <div class="submit-note">
       <p class="eyebrow">YOUR LITTLE UNIVERSE</p>
@@ -97,6 +108,28 @@
   </section>
   <footer class="hobby-footer"><p>愿每种真诚的喜欢都有回声。<br><strong>雲 · 爱好板</strong></p><a href="/">返回博客首页 ↑</a></footer>
 </main>
-<script defer src="/js/yun-hobby.js?v=20261122-1"></script>
+<dialog id="account-dialog" class="account-dialog" aria-labelledby="account-title">
+  <form id="account-form" method="dialog" novalidate>
+    <div class="account-heading"><h2 id="account-title">注册爱好板</h2><button id="account-close" class="account-close" type="button" aria-label="关闭">✕</button></div>
+    <p class="account-explain">普通访客账号，仅用于记录你的投稿；不具备任何管理员权限。</p>
+    <label>用户名 <span>2～24 字，中文/字母/数字/下划线</span>
+      <input id="account-username" type="text" required autocomplete="username" minlength="2" maxlength="24" placeholder="为自己取一个名字">
+    </label>
+    <label>密码 <span>至少 8 位</span>
+      <input id="account-password" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="设置一个不易猜到的密码">
+    </label>
+    <label id="account-confirm-wrap">确认密码
+      <input id="account-confirm" type="password" autocomplete="new-password" placeholder="再次输入密码">
+    </label>
+    <p class="form-help">目前没有邮箱找回密码功能，请妥善保存密码。请不要使用重要账号的相同密码。</p>
+    <p id="account-status" class="feedback" role="status" aria-live="polite"></p>
+    <div class="account-footer">
+      <button id="account-submit" type="submit" class="button primary">创建账号</button>
+      <button id="account-toggle" type="button" class="account-link">已有账号？去登录</button>
+    </div>
+  </form>
+</dialog>
+<script defer src="/js/yun-hobby.js?v=20261122-3"></script>
+<script defer src="/js/yun-hobby-account.js?v=20261122-3"></script>
 </body>
 </html>
