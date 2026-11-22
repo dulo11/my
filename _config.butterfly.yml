@@ -1,9 +1,15 @@
+# 作者卡片头像（备用静态入口）；实际头像由 /js/yun-avatar-cycle.js 在刷新时切换
+avatar:
+  img: /img/avatar/star.gif
+  effect: false
+
 # 公告（右侧“公告”卡片）
 aside:
   card_announcement:
     enable: true
     content: |
       日常
+      <p style="font-size:.86em;line-height:1.85;margin:.5em 0 0">主站：<a href="https://966405.xyz/" target="_blank" rel="noopener">966405.xyz</a><br>备用：<a href="https://zhou.com.jm/" target="_blank" rel="noopener">zhou.com.jm</a><br>第三入口：<a href="https://my-99d.pages.dev/" target="_blank" rel="noopener">pages.dev</a></p>
 
   card_author:
     enable: true
@@ -32,6 +38,7 @@ inject:
   bottom:
     - <script src="/js/sakura.js?v=20261025-2"></script>
     - <script src="/js/yun-themes.js?v=20261025-2"></script>
+    - <script src="/js/yun-avatar-cycle.js?v=20261122-1"></script>
 footer:
   owner:
     enable: true
