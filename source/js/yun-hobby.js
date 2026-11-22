@@ -173,6 +173,7 @@
    const response=await api("submit",{title,body,nickname,category,image});
    status("form-status",response.message||"投稿成功，等待审核。");
    form.reset();clearImage();$("char-count").textContent="0 / 600";
+   document.dispatchEvent(new CustomEvent("yun-hobby-submitted"));
   }catch(err){status("form-status",err.message||"上传失败，请稍后再试。");}
   finally{submit.disabled=false;submit.textContent="✦ 提交分享";}
  });
