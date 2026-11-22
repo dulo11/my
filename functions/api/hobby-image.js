@@ -1,5 +1,6 @@
 /* 按需读取经审核的 WebP 小图片；待审核图片仅管理员可见 */
 import {sessionValid} from "./star-admin.js";
+import {ensureHobbyAuthSchema,hobbyUserFromRequest} from "../_lib/hobby-auth.js";
 const uuid=s=>typeof s==="string"&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(s);
 const fail=(n)=>new Response(n,{status:n==="未找到"?404:503,headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store"}});
 export async function onRequestGet({request,env}){
@@ -9,7 +10,18 @@ export async function onRequestGet({request,env}){
   if(!uuid(id))return fail("未找到");
   const row=await env.WISH_DB.prepare("SELECT image_webp,status FROM hobby_posts WHERE id=?").bind(id).first();
   if(!row?.image_webp)return fail("未找到");
-  if(row.status!=="visible" && !await sessionValid(request,env.WISH_DB))return fail("未找到");
+  if(row.status!=="visible") {
+   let permitted=await sessionValid(request,env.WISH_DB);
+   if(!permitted){
+    await ensureHobbyAuthSchema(env.WISH_DB);
+    const visitor=await hobbyUserFromRequest(request,env.WISH_DB);
+    if(visitor){
+     const owner=await env.WISH_DB.prepare("SELECT post_id FROM hobby_post_owners WHERE post_id=? AND user_id=?").bind(id,visitor.id).first();
+     permitted=!!owner;
+    }
+   }
+   if(!permitted)return fail("未找到");
+  }
   const binary=atob(row.image_webp);
   const bytes=new Uint8Array(binary.length);
   for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
