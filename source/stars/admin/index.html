@@ -130,11 +130,34 @@ button:hover{filter:brightness(1.1)}
         <button id="hobby-next" type="button" class="secondary" disabled>下一页 →</button>
       </div>
     </section>
+    <section id="hobby-comments-panel">
+      <h2>💬 爱好板 · 评论与回复审核</h2>
+      <p class="hint">访客评论与回复默认待审核，审核通过后才在爱好板公开。批准后相关作者会在站内收到消息。</p>
+      <div class="hobby-admin-controls">
+        <label for="hobby-comment-filter">评论状态</label>
+        <select id="hobby-comment-filter">
+          <option value="pending">待审核</option>
+          <option value="visible">已公开</option>
+          <option value="hidden">已隐藏</option>
+          <option value="all">全部评论</option>
+        </select>
+        <button id="hobby-comment-refresh" type="button">刷新评论</button>
+      </div>
+      <p id="hobby-comment-message" role="status" aria-live="polite"></p>
+      <p id="hobby-comment-counts" class="hint"></p>
+      <div id="hobby-comment-items"></div>
+      <div class="hobby-admin-controls">
+        <button type="button" id="hobby-comment-prev" class="secondary" disabled>← 上一页</button>
+        <span id="hobby-comment-page">第 1 页</span>
+        <button type="button" id="hobby-comment-next" class="secondary" disabled>下一页 →</button>
+      </div>
+    </section>
   </div>
   </div>
 </main>
-<script src="/js/yun-hobby-admin-unified.js?v=20261122-3"></script>
-<script src="/js/yun-stars-admin.js?v=20261122-3"></script>
+<script src="/js/yun-hobby-admin-unified.js?v=20261122-4"></script>
+<script src="/js/yun-hobby-comment-admin.js?v=20261122-4"></script>
+<script src="/js/yun-stars-admin.js?v=20261122-4"></script>
 </body>
 </html>
 
