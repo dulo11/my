@@ -4,16 +4,29 @@
 
 ## 动态头像
 
-在 `source/img/avatar/` 下保存四款粉紫配色 GIF：
+在 `source/img/avatar/` 下保留四款粉紫配色原 GIF（当前网站优先使用相应的 `*-smooth.webp` 修复版）：
 
 - `star.gif` — 紫晶星芒
 - `sakura.gif` — 水晶樱花
 - `moon.gif` — 月亮星空
 - `heart.gif` — 爱心云朵
 
-`source/js/yun-avatar-cycle.js` 现在将四款做成**同一头像位置的慢速四合一轮播**：星芒 → 樱花 → 月亮 → 爱心云朵，每款停留 **4 秒**，完整一轮约 **16 秒**。每次完整刷新还会更换开始时显示的那一款；PJAX 导航不会重复开启定时器。网页由 JS 依次显示四个单独 GIF，以便保留各自闪烁细节。\n\n另提供离线下载用的 **真正四合一 GIF**（淡粉紫、深紫晶两套，每套可从不同图案开始），单个 GIF 16 帧、每帧 1 秒、完整循环 16 秒。
+`source/js/yun-avatar-cycle.js` 现在将四款做成**同一头像位置的慢速四合一轮播**：星芒 → 樱花 → 月亮 → 爱心云朵，每款停留 **4 秒**，完整一轮约 **16 秒**。每次完整刷新还会更换开始时显示的那一款；PJAX 导航不会重复开启定时器。网页现由 JS 依次显示四个修复版 WebP 动图，切换时使用淡入淡出。\n\n另提供离线下载用的 **真正四合一 GIF**（淡粉紫、深紫晶两套，每套可从不同图案开始），单个 GIF 16 帧、每帧 1 秒、完整循环 16 秒。
 
 修改 `_config.butterfly.yml` 的 `avatar.img` 提供静态路径备用；只替换作者卡片图片，不替换文章内容。
+
+## 2026-11-23 动态头像抖动修复
+
+之前四款 `star.gif`、`sakura.gif`、`moon.gif`、`heart.gif` 是 **104×104 像素、2 帧、每帧 400ms** 的缩略动图。放大到手机作者卡片时容易锯齿；帧内容还存在轻微的上下位移，视觉上会出现一跳一跳的感觉。JavaScript 在两款之间直接更换 `img.src` 也会造成突然跳变。
+
+为保留原图并减少跳动：
+
+- 旧的四张 GIF 仍在 `source/img/avatar/`，没有删除。
+- 新增 `scripts/build_smooth_avatars.py`，以原 GIF 为输入，归一化画面位置并补充渐变过渡帧。
+- 新增 `star-smooth.webp`、`sakura-smooth.webp`、`moon-smooth.webp`、`heart-smooth.webp` 四张 **320×320、8 帧** 动态 WebP，每帧约 260ms。
+- `_config.butterfly.yml` 的默认头像切换为 `star-smooth.webp`；`yun-avatar-cycle.js` 每 **4 秒**切换图案时，添加约 **620ms** 淡入淡出。
+- 手机上仍可能看到少量由旧 104px 像素源产生的原始细节损失，WebP 无法凭空增加原图纹理。若以后需要完全高清，可将生成脚本改为使用更高分辨率的原始动图。
+- 新 `.github/workflows/repair-avatar-assets.yml` 用于在更新生成脚本后自动构建动画文件（会提交生成的资源）；无需在访客浏览器运行 Python。
 
 ## 域名双入口
 
