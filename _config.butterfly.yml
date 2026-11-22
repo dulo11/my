@@ -1,6 +1,6 @@
-# 作者卡片头像（备用静态入口）；四款头像实际由 /js/yun-avatar-cycle.js 每 4 秒慢速切换
+# 作者卡片头像（平滑动态 WebP）；四款每 4 秒轮播，切换平滑淡入淡出
 avatar:
-  img: /img/avatar/star.gif
+  img: /img/avatar/star-smooth.webp
   effect: false
 
 # 公告（右侧“公告”卡片）
@@ -38,7 +38,7 @@ inject:
   bottom:
     - <script src="/js/sakura.js?v=20261025-2"></script>
     - <script src="/js/yun-themes.js?v=20261025-2"></script>
-    - <script src="/js/yun-avatar-cycle.js?v=20261123-1"></script>
+    - <script src="/js/yun-avatar-cycle.js?v=20261123-2"></script>
 footer:
   owner:
     enable: true
