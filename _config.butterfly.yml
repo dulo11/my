@@ -38,7 +38,7 @@ inject:
   bottom:
     - <script src="/js/sakura.js?v=20261025-2"></script>
     - <script src="/js/yun-themes.js?v=20261025-2"></script>
-    - <script src="/js/yun-avatar-cycle.js?v=20261122-1"></script>
+    - <script src="/js/yun-avatar-cycle.js?v=20261122-2"></script>
 footer:
   owner:
     enable: true
