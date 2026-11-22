@@ -1,5 +1,6 @@
 /* /api/hobby-account: visitor-only registration/login, independent of administrator */
 import {ensureHobbyAuthSchema,normalizeUsername,randomHex,hashPassword,equal,authRate,createHobbySession,clearHobbySession,hobbyUserFromRequest,sha} from "../_lib/hobby-auth.js";
+import {ensureHobbyCommunity} from "../_lib/hobby-community.js";
 
 const json=(body,status=200,headers={})=>new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff",...headers}});
 class AuthError extends Error{constructor(code,msg){super(msg);this.code=code;}}
@@ -78,11 +79,15 @@ export async function onRequest({request,env}){
   if(action==="delete-mine"){
    if(!user)throw new AuthError(401,"请先登录");
    if(!uuid(data.id))throw new AuthError(400,"投稿编号不正确");
+   await ensureHobbyCommunity(db);
    const owns=await db.prepare("SELECT post_id FROM hobby_post_owners WHERE post_id=? AND user_id=?").bind(data.id,user.id).first();
    if(!owns)throw new AuthError(403,"只能删除自己账号发布的内容");
    await db.batch([
     db.prepare("DELETE FROM hobby_likes WHERE post_id=?").bind(data.id),
     db.prepare("DELETE FROM hobby_reports WHERE post_id=?").bind(data.id),
+    db.prepare("DELETE FROM hobby_favorites WHERE post_id=?").bind(data.id),
+    db.prepare("DELETE FROM hobby_comments WHERE post_id=?").bind(data.id),
+    db.prepare("DELETE FROM hobby_notifications WHERE post_id=?").bind(data.id),
     db.prepare("DELETE FROM hobby_post_owners WHERE post_id=? AND user_id=?").bind(data.id,user.id),
     db.prepare("DELETE FROM hobby_posts WHERE id=?").bind(data.id)
    ]);
