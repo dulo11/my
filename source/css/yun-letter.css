@@ -1,0 +1,169 @@
+/* 「云的另一面」专属样式：全部限制在 #yun-letter 内，不改变其他文章 */
+#yun-letter {
+  --yl-a: #ff82ae;
+  --yl-b: #7958d9;
+  --yl-c: #ffe3b8;
+  --yl-white: #fffaff;
+  --yl-dark: #241c44;
+  --yl-panel: rgba(255,255,255,.16);
+  --yl-border: rgba(255,255,255,.33);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin: 12px auto 28px;
+  max-width: 1040px;
+  border-radius: 28px;
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--yl-white);
+  background: linear-gradient(140deg,var(--yl-a),var(--yl-b) 54%,#202850);
+  box-shadow: 0 24px 75px rgba(79,38,124,.22);
+  transition: background .65s ease;
+}
+#yun-letter[data-scene="aurora"] { --yl-a:#24cdbb; --yl-b:#5571df; --yl-c:#a7e9f5; }
+#yun-letter[data-scene="sunset"] { --yl-a:#fb896b; --yl-b:#ae4bb0; --yl-c:#ffdc98; }
+#yun-letter[data-scene="night"] { --yl-a:#303d86; --yl-b:#6d51bc; --yl-c:#bdc8ff; }
+#yun-letter *, #yun-letter *::before, #yun-letter *::after { box-sizing: border-box; }
+#yun-letter .yun-letter__progress {
+  position: absolute; z-index: 4; left: 0; top: 0; height: 5px;
+  width: 100%; transform-origin: left center; transform: scaleX(0);
+  background: linear-gradient(90deg,#fff,#ffd2f0,#f9d58c);
+  box-shadow: 0 0 14px rgba(255,255,255,.7);
+  pointer-events: none;
+}
+#yun-letter .yun-letter__glow {
+  position: absolute; z-index: 0; border-radius: 50%;
+  filter: blur(4px); pointer-events: none; opacity: .7;
+}
+#yun-letter .yun-letter__glow--one {
+  width: 320px; height: 320px; top: -95px; right: -85px;
+  background: radial-gradient(circle,rgba(255,240,189,.48),transparent 70%);
+  animation: yl-drift 10s ease-in-out infinite alternate;
+}
+#yun-letter .yun-letter__glow--two {
+  width: 400px; height: 400px; top: 300px; left: -210px;
+  background: radial-gradient(circle,rgba(149,232,255,.34),transparent 72%);
+  animation: yl-drift 13s ease-in-out infinite alternate-reverse;
+}
+#yun-letter .yun-letter__hero,
+#yun-letter .yun-letter__section,
+#yun-letter .yun-letter__end {
+  position: relative; z-index: 1; padding: 44px clamp(18px,5.5vw,64px);
+}
+#yun-letter .yun-letter__hero { padding-top: 82px; padding-bottom: 66px; min-height: 430px; }
+#yun-letter .yun-letter__eyebrow {
+  letter-spacing: .22em; text-transform: uppercase; font-size: 11px;
+  opacity: .86; font-weight: 800;
+}
+#yun-letter .yun-letter__title {
+  margin: 25px 0 18px; color: white; font-size: clamp(36px,7vw,76px);
+  font-weight: 900; line-height: 1.24; letter-spacing: -.035em; border: 0;
+  text-shadow: 0 8px 30px rgba(38,24,89,.18);
+}
+#yun-letter .yun-letter__title span {
+  display: inline-block;
+  background: linear-gradient(95deg,#fff9df,#fff,#fbd3fb,#bfeaff);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  background-size: 220% auto; animation: yl-shimmer 6s linear infinite;
+}
+#yun-letter .yun-letter__lead { color: #fff; opacity: .95; font-size: clamp(15px,2.5vw,18px); line-height: 2; max-width: 610px; }
+#yun-letter .yun-letter__pill {
+  display: inline-flex; align-items: center; min-height: 37px; padding: 6px 16px;
+  border: 1px solid var(--yl-border); background:var(--yl-panel);
+  border-radius: 999px; color: white; text-decoration: none;
+  font-size: 13px; font-weight: 700; backdrop-filter: blur(12px);
+}
+#yun-letter a.yun-letter__pill:hover { color:white; background:rgba(255,255,255,.27); }
+#yun-letter .yun-letter__orb {
+  position:absolute; width:175px; height:175px; border-radius:50%;
+  top:45px; right:50px; opacity:.72; pointer-events:none;
+  background:radial-gradient(circle at 27% 26%,#fff 0%,#fff4dc 8%,#fface4 32%,#8c83f0 62%,transparent 72%);
+  box-shadow: 0 0 75px rgba(255,255,255,.3);
+  animation:yl-float 7s ease-in-out infinite;
+}
+#yun-letter .yun-letter__section { padding-top: 20px; padding-bottom: 22px; }
+#yun-letter .yun-letter__section h3 {
+  color:#fff; font-size:clamp(23px,3.7vw,34px); letter-spacing:.01em; margin:14px 0 12px;
+  border: 0;
+}
+#yun-letter .yun-letter__kicker { font-size:12px; opacity:.88; letter-spacing:.14em; font-weight:800; }
+#yun-letter .yun-letter__panel {
+  background: var(--yl-panel); border:1px solid var(--yl-border);
+  padding: clamp(18px,3.8vw,34px); border-radius: 23px;
+  box-shadow: 0 10px 28px rgba(40,20,75,.09);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+}
+#yun-letter .yun-letter__panel p { color:#fff; line-height:2.13; margin: .55em 0 1em; font-size: 15px; }
+#yun-letter .yun-letter__panel p:last-child { margin-bottom:0; }
+#yun-letter .yun-letter__quote {
+  position:relative; font-size: clamp(19px,3vw,26px); line-height:1.8;
+  font-weight:800; margin:18px 0 22px; padding: 10px 16px 10px 24px;
+  border-left:3px solid var(--yl-c); color:white;
+}
+#yun-letter .yun-letter__grid {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px;
+}
+#yun-letter .yun-letter__mini {
+  padding:20px; border-radius:19px; background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.28);
+}
+#yun-letter .yun-letter__mini strong { display:block; font-size:19px; color:white; margin-bottom:5px; }
+#yun-letter .yun-letter__mini p { margin:0; font-size:14px; opacity:.93; }
+#yun-letter .yun-letter__choices { display:flex; gap:10px; flex-wrap:wrap; margin:18px 0; }
+#yun-letter button {
+  border:1px solid rgba(255,255,255,.58);
+  color:#fff; cursor:pointer; background:rgba(255,255,255,.13);
+  font-family:inherit; font-size:14px; font-weight:700;
+  border-radius:999px; min-height:43px; padding:10px 18px;
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  transition: transform .2s ease,background .2s ease,box-shadow .2s ease;
+}
+#yun-letter button:hover { transform:translateY(-2px); background:rgba(255,255,255,.29); }
+#yun-letter button:focus-visible, #yun-letter textarea:focus-visible,
+#yun-letter a:focus-visible { outline:3px solid #fff2a9; outline-offset:3px; }
+#yun-letter button[aria-pressed="true"] { background:rgba(255,255,255,.32); box-shadow:0 0 0 2px rgba(255,255,255,.3) inset; }
+#yun-letter .yun-letter__small { font-size:13px; line-height:1.7; opacity:.85; color:white; }
+#yun-letter .yun-letter__fortune {
+  font-size:clamp(20px,3vw,28px); font-weight:800; line-height:1.85;
+  min-height:3.8em; color:white; margin:6px 0 15px;
+}
+#yun-letter .yun-letter__capsule {
+  width:100%; min-height:125px; resize:vertical; border-radius:16px;
+  padding:16px 18px; font:inherit; font-size:15px; line-height:1.8;
+  color:var(--yl-dark); background:rgba(255,255,255,.93);
+  border:2px solid transparent; margin: 8px 0 14px;
+}
+#yun-letter .yun-letter__capsule::placeholder { color:#796b96; }
+#yun-letter .yun-letter__actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+#yun-letter .yun-letter__status { min-height:24px; color:#fff; font-size:13px; }
+#yun-letter .yun-letter__end {
+  padding-top:48px; padding-bottom:66px; text-align:center;
+}
+#yun-letter .yun-letter__end p { color:#fff; font-size:16px; line-height:2; }
+#yun-letter .yun-letter__heart { font-size:38px; display:block; margin-bottom:12px; }
+#yun-letter .yun-letter__spark {
+  position:absolute; z-index:5; width:7px; height:7px; border-radius:50%;
+  background:var(--yl-c); pointer-events:none;
+  animation:yl-spark 1s ease-out forwards;
+}
+@keyframes yl-shimmer { to {background-position:220% center;} }
+@keyframes yl-float { 50% { transform:translateY(18px) scale(1.07); } }
+@keyframes yl-drift { to { transform:translate(35px,45px); } }
+@keyframes yl-spark {
+  0% {opacity:1; transform:translate(0,0) scale(1);}
+  100% {opacity:0; transform:translate(var(--yl-x),var(--yl-y)) scale(.15);}
+}
+@media (max-width:650px) {
+  #yun-letter { border-radius:19px; margin:8px 0 24px; }
+  #yun-letter .yun-letter__hero { padding-top:72px; min-height:380px; }
+  #yun-letter .yun-letter__orb { width:120px; height:120px; right:-20px; top:24px; opacity:.52; }
+  #yun-letter .yun-letter__grid { grid-template-columns:1fr; }
+  #yun-letter .yun-letter__hero,
+  #yun-letter .yun-letter__section,
+  #yun-letter .yun-letter__end { padding-left:20px; padding-right:20px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  #yun-letter *, #yun-letter *::before, #yun-letter *::after {
+    animation:none !important; scroll-behavior:auto !important;
+    transition:none !important;
+  }
+}
