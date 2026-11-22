@@ -1,0 +1,31 @@
+name: Source backup ZIP
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/site-backup.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout complete source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Create portable source snapshot
+        run: |
+          zip -q -r my-site-source.zip . -x '.git/*' 'node_modules/*' 'public/*'
+          unzip -t my-site-source.zip | tail -1
+      - name: Upload source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-site-source
+          path: my-site-source.zip
+          retention-days: 90
+          if-no-files-found: error
