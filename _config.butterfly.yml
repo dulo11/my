@@ -9,7 +9,7 @@ aside:
     enable: true
     content: |
       日常
-      <p style="font-size:.86em;line-height:1.85;margin:.5em 0 0">主站：<a href="https://966405.xyz/" target="_blank" rel="noopener">966405.xyz</a><br>备用：<a href="https://zhou.com.jm/" target="_blank" rel="noopener">zhou.com.jm</a><br>第三入口：<a href="https://my-99d.pages.dev/" target="_blank" rel="noopener">pages.dev</a></p>
+      <p style="font-size:.86em;line-height:1.85;margin:.5em 0 0">主站：<a href="https://966405.xyz/" target="_blank" rel="noopener">966405.xyz</a><br>备用：<a href="https://zhou.com.jm/" target="_blank" rel="noopener">zhou.com.jm</a></p>
 
   card_author:
     enable: true
