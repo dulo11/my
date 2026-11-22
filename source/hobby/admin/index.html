@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#181837">
+<title>爱好板管理后台 · 雲</title>
+<link rel="stylesheet" href="/css/yun-hobby.css?v=20261122-1">
+<style>
+.hobby-app{max-width:1000px}
+.hobby-admin-header{margin:25px 0 32px}
+.hobby-admin-header h1{font-size:clamp(28px,5vw,44px);line-height:1.4}
+.admin-panel{background:#ffffffef;color:#302446;border-radius:22px;padding:clamp(18px,3vw,30px);margin:20px 0}
+.admin-panel p{line-height:1.8}
+.admin-panel a{color:#6b429b;text-decoration:underline}
+.admin-controls{display:flex;flex-wrap:wrap;gap:11px;align-items:center;margin:20px 0}
+.admin-controls select,.admin-controls button,.admin-card button{border-radius:10px;padding:10px 13px;border:1px solid #b0a1c9;background:#f5edfc;color:#482e6b;font-size:14px}
+.admin-card{background:#f8f4fe;border:1px solid #ddd1ea;border-radius:16px;margin:14px 0;padding:18px;overflow-wrap:anywhere}
+.admin-card h3{margin:8px 0;color:#37284f;font-size:19px}
+.admin-card p{white-space:pre-wrap;line-height:1.8}
+.admin-card .meta{color:#746383;font-size:13px}
+.admin-card img{max-width:270px;max-height:210px;object-fit:cover;border-radius:12px}
+.admin-card .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.admin-card .delete{background:#8e2e55;color:white;border-color:#8e2e55}
+.admin-card button:hover,.admin-controls button:hover{filter:brightness(.94)}
+#message{color:#78409c;min-height:25px;line-height:1.7}
+#need-login{background:#f9ebf7;border-radius:15px;padding:17px}
+[hidden]{display:none!important}
+@media(max-width:600px){.hobby-app{padding:14px}.admin-card{padding:13px}}
+</style>
+</head>
+<body>
+<main class="hobby-app">
+ <nav class="hobby-nav"><a class="hobby-brand" href="/hobby/">♡ 雲 <span>· HOBBY ADMIN</span></a>
+ <div class="hobby-nav-links"><a href="/hobby/">返回爱好板</a><a href="/stars/admin/">星空管理登录</a><a href="/">博客</a></div></nav>
+ <header class="hobby-admin-header"><p class="eyebrow">MODERATION CENTER</p><h1>🛡 爱好板管理后台</h1><p>使用已有的「星空管理后台」管理员登录状态管理爱好板。不需要新的账号或密码。</p></header>
+ <section class="admin-panel">
+  <p id="message" role="status" aria-live="polite">正在检查管理员身份…</p>
+  <div id="need-login" hidden><strong>尚未登录管理员</strong><p>请先打开星空管理后台登录；登录成功后返回此页刷新即可。</p><a href="/stars/admin/">→ 前往星空管理后台登录</a></div>
+  <div id="admin-content" hidden>
+   <div class="admin-controls">
+    <label for="filter">内容状态：</label>
+    <select id="filter"><option value="pending">待审核</option><option value="visible">已公开</option><option value="hidden">已隐藏</option><option value="all">全部</option></select>
+    <button id="reload" type="button">⟳ 刷新列表</button>
+   </div>
+   <p id="counts"></p>
+   <div id="admin-items"></div>
+   <div class="pagination"><button id="prev" type="button">← 上一页</button><span id="page">第 1 页</span><button id="next" type="button">下一页 →</button></div>
+  </div>
+ </section>
+</main>
+<script defer src="/js/yun-hobby-admin.js?v=20261122-1"></script>
+</body>
+</html>
