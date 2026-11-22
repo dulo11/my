@@ -49,7 +49,7 @@ async function operate(operation,ids,kind=$('kind').value){
 }
 const settingKeys=['wishEnabled','commentEnabled','likeEnabled','wishMax','commentMax','wishInterval','commentInterval','likeInterval','announcement'];
 async function loadSettings(){const {settings}=await api('settings',{});for(const key of settingKeys)typeof settings[key]==='boolean'?$(key).checked=settings[key]:$(key).value=settings[key]}
-async function state(){try{const s=await api('me');$('setup').hidden=s.initialized;$('login').hidden=!s.initialized||s.authenticated;$('panel').hidden=!s.authenticated;if(!s.initialized){await setup();$('setup-ready').textContent=s.setupReady?'检测到授权记录，可以继续创建管理员。':'复制授权SQL，在D1控制台执行一次。'}if(s.authenticated){await load();await dashboard();await loadSettings()}}catch(e){notice(e.message)}}
+async function state(){try{const s=await api('me');$('setup').hidden=s.initialized;$('login').hidden=!s.initialized||s.authenticated;$('panel').hidden=!s.authenticated;if(!s.initialized){await setup();$('setup-ready').textContent=s.setupReady?'检测到授权记录，可以继续创建管理员。':'复制授权SQL，在D1控制台执行一次。'}if(s.authenticated){await load();await dashboard();await loadSettings()}window.dispatchEvent(new CustomEvent('yun-admin-auth',{detail:{authenticated:!!s.authenticated}}))}catch(e){notice(e.message)}}
 async function busy(button,fn){if(button.disabled)return;button.disabled=true;try{await fn()}catch(e){notice(e.message)}finally{button.disabled=false}}
 $('copy-sql').onclick=async()=>{try{await navigator.clipboard.writeText($('setup-sql').value);notice('SQL已复制，请在D1控制台执行')}catch{$('setup-sql').select();notice('已选中SQL，请手动复制')}};
 $('renew').onclick=()=>busy($('renew'),async()=>{await setup(true);notice('已重新生成，请执行新的SQL')});
