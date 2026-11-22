@@ -21,6 +21,8 @@ try{
 const selected=images[index];
 function apply(){
  const selectors=[
+  "#aside-content .card-widget.card-info .avatar-img img",
+  "#aside-content .card-info .avatar-img img",
   "#aside-content .card-info img.avatar-img",
   "#aside-content .card-widget.card-info img.avatar-img",
   "#aside-content .card-info .avatar img",
