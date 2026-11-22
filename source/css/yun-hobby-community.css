@@ -1,0 +1,53 @@
+/* 雲爱好板社区增强，仅作用于 /hobby/ 独立页面。不会改 Hexo 首页。 */
+#hobby-search{flex:1 1 210px;max-width:370px;min-width:140px;background:#292544;border:1px solid #ffffff5c;border-radius:11px;color:white;padding:10px 13px;font-size:14px}
+#hobby-search::placeholder{color:#c7bdd6}
+.toolbar{flex-wrap:wrap;gap:9px}
+.toolbar button{white-space:nowrap}
+.toolbar label{white-space:nowrap}
+.hobby-card .card-foot .card-open{background:#f6d9ec;color:#57345f;font-weight:800;border-color:transparent}
+.hobby-card .card-foot .card-author{background:transparent;border:0;color:#e6d2ff;text-decoration:underline;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0}
+.card-foot .by{margin-right:auto}
+.community-dialog{background:#191930;color:#f7effe;border:1px solid #907cb4;max-width:min(720px,calc(100vw - 18px));width:min(680px,calc(100vw - 18px));max-height:min(88vh,900px);overflow-y:auto;border-radius:23px;padding:clamp(16px,3.5vw,28px);box-shadow:0 30px 100px #000b}
+.community-dialog::backdrop{background:#03020ac2;backdrop-filter:blur(7px)}
+.community-dialog-head{display:flex;gap:15px;justify-content:space-between;align-items:start;margin-bottom:12px}
+.community-dialog-head h2{font-size:clamp(21px,3.8vw,29px);line-height:1.4;margin:0}
+.community-dialog button{cursor:pointer;max-width:100%;border:1px solid #ffffff38;color:#f7f0fd;background:#ffffff1a;border-radius:12px;padding:9px 14px;font-size:13px}
+.community-dialog button:hover{background:#ffffff33}
+.community-dialog button:disabled{opacity:.5;cursor:wait}
+.community-dialog-head button{font-size:19px;border-radius:50%;padding:0;min-width:38px;height:38px}
+.community-dialog .feedback{color:#f4d2eb;font-size:13px}
+.community-dialog h3{font-size:19px;margin:12px 0;color:#ffe1fb;overflow-wrap:anywhere}
+.community-dialog .post-meta{display:flex;gap:10px;flex-wrap:wrap;color:#d8ccea;font-size:13px;margin:15px 0}
+.community-dialog .post-body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9;color:#f2eafc;margin:16px 0;font-size:15px}
+.community-dialog .post-image{max-width:100%;width:auto;max-height:400px;border-radius:15px;object-fit:contain;display:block;margin:12px auto}
+.community-tool-row{display:flex;gap:9px;flex-wrap:wrap;border-top:1px solid #ffffff2c;border-bottom:1px solid #ffffff2c;padding:16px 0;margin-top:20px}
+.community-tool-row button:first-child{background:#f6d5eb;color:#6c2953;font-weight:900}
+.community-comments{padding:14px 0}
+.community-comment{border-bottom:1px solid #ffffff26;padding:14px 0;overflow-wrap:anywhere}
+.community-comment .author{font-weight:800;color:#f9deed}
+.community-comment .reply-context{color:#bdb2d1;font-size:12px;margin:5px 0}
+.community-comment .comment-text{white-space:pre-wrap;line-height:1.8;margin:6px 0 10px}
+.community-comment .comment-meta{color:#c8b9d8;font-size:12px}
+.community-comment .reply-btn{margin-left:11px;padding:4px 11px}
+#post-comment-form{padding-top:19px}
+#post-comment-form label{display:block;font-weight:800;color:#f8e8fc;margin-bottom:9px}
+#post-comment-form label span{display:block;font-weight:400;font-size:12px;color:#bfc0d6;margin-top:4px}
+#post-comment-text{display:block;width:100%;min-height:85px;resize:vertical;background:#27233f;border:1px solid #ffffff60;border-radius:13px;color:white;padding:12px;line-height:1.7}
+#post-comment-send{background:#f4d7ea;color:#5c2b61;font-weight:800;margin-top:12px}
+#post-reply-label{font-size:13px;color:#f7d6e7}
+#post-reply-cancel{font-size:12px}
+.community-list-item{padding:15px 0;border-bottom:1px solid #ffffff25;overflow-wrap:anywhere}
+.community-list-item strong{display:block;color:#f7e4fc;font-size:17px}
+.community-list-item p{white-space:pre-wrap;color:#d9cbe4;line-height:1.6;font-size:13px;max-height:7em;overflow:hidden}
+.community-list-item small{color:#bdaed1}
+.community-list-item button{margin:10px 7px 0 0}
+.community-list-item .new-message{border-left:3px solid #ffd0bc;padding-left:9px}
+.community-dialog [hidden]{display:none!important}
+#post-edit-tip,#hobby-edit-tip{margin:10px 0;color:#774597}
+#edit-cancel{background:#7b627f;color:#fff}
+#remove-old-photo-label{font-size:13px;color:#77638b;margin-top:10px}
+#remove-old-photo-label input{display:inline;width:auto;min-height:0;vertical-align:middle;margin:0 5px 0 0}
+#unread-count{display:inline-flex;background:#e2578f;color:#fff;font-size:11px;border-radius:100px;min-width:17px;height:17px;align-items:center;justify-content:center;margin-left:4px}
+#unread-count[hidden]{display:none}
+@media(max-width:700px){.community-dialog{width:calc(100vw - 12px);max-width:calc(100vw - 12px);padding:17px}.hobby-card .card-foot{gap:7px}.toolbar{justify-content:flex-start}.toolbar label{font-size:12px}.community-tool-row button{flex:1 1 120px}}
+@media(prefers-reduced-motion:reduce){.community-dialog *, .community-dialog *:before,.community-dialog *:after{animation:none!important;transition:none!important}}
