@@ -46,6 +46,8 @@ function setAccount(user){
  $("account-login-open").hidden=logged;
  $("account-info").hidden=!logged;
  $("account-logout").hidden=!logged;
+ $("my-favorites-open").hidden=!logged;
+ $("my-notifications-open").hidden=!logged;
  $("account-info").textContent=logged?"👤 "+user.name:"";
  $("my-posts").hidden=!logged;
  const nickname=document.querySelector('#hobby-form [name="nickname"]');
@@ -56,6 +58,7 @@ function setAccount(user){
  }
  if(logged){myPage=1;loadMine();}
  else {$("my-list").replaceChildren();myStatus("");}
+ document.dispatchEvent(new CustomEvent("yun-hobby-auth",{detail:{user:user||null}}));
 }
 async function check(){
  try{const result=await api("me");setAccount(result.user||null);}
@@ -78,6 +81,8 @@ async function loadMine(){
     img.alt=item.title+" 的图片";img.loading="lazy";card.append(img);
    }
    card.append(text("p","♡ "+item.likes+" · "+new Date(item.created_at).toLocaleString("zh-CN")));
+   const edit=text("button","✎ 编辑");edit.type="button";
+   edit.addEventListener("click",()=>document.dispatchEvent(new CustomEvent("yun-hobby-edit",{detail:item})));
    const del=text("button","删除这篇投稿");del.type="button";
    del.addEventListener("click",async()=>{
     if(!confirm("确定删除这条分享及其图片？删除后不能恢复。"))return;
@@ -86,9 +91,12 @@ async function loadMine(){
     catch(e){myStatus(e.message);}
     finally{del.disabled=false;}
    });
-   card.append(del);list.append(card);
+   card.append(edit,del);list.append(card);
   }
-  myStatus(response.hasMore?"当前显示前 20 条投稿，更多投稿可在以后版本翻页。":"共显示 "+response.items.length+" 条账号投稿。");
+  $("my-page").textContent="第 "+myPage+" 页";
+  $("my-prev").disabled=myPage<=1;
+  $("my-next").disabled=!response.hasMore;
+  myStatus("本页显示 "+response.items.length+" 条账号投稿，可编辑或删除。");
  }catch(err){myStatus(err.message);}
 }
 $("account-register-open").addEventListener("click",()=>open("register"));
@@ -102,6 +110,8 @@ $("account-logout").addEventListener("click",async()=>{
  finally{$("account-logout").disabled=false;}
 });
 $("my-reload").addEventListener("click",loadMine);
+$("my-prev").addEventListener("click",()=>{if(myPage>1){myPage--;loadMine();}});
+$("my-next").addEventListener("click",()=>{if(!$("my-next").disabled){myPage++;loadMine();}});
 form.addEventListener("submit",async e=>{
  e.preventDefault();
  const username=$("account-username").value.trim(),password=$("account-password").value;
