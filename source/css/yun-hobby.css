@@ -82,3 +82,43 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:950px){.hero-art{opacity:.34;right:0;top:90px}.hobby-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hobby-submit{grid-template-columns:1fr}}
 @media(max-width:600px){.hobby-nav-links{gap:12px;font-size:12px}.hobby-brand span{display:none}.hobby-hero{padding:29px 22px;min-height:400px;border-radius:22px}.hero-art{transform:scale(.6);transform-origin:top right;right:2px;top:60px;opacity:.3}.hobby-hero p:not(.eyebrow){font-size:14px}.hobby-content{padding:45px 0}.hobby-grid{grid-template-columns:1fr}.hobby-submit{padding:16px;gap:20px}.hobby-form{padding:20px}.form-row{grid-template-columns:1fr;gap:0}.hero-actions{gap:9px}.button{font-size:13px;padding:12px 17px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* 普通访客账号入口和注册弹窗 */
+.hobby-nav-links .account-link,.account-link{
+ border:1px solid #ffffff50;background:#ffffff1f;color:#fff;border-radius:99px;
+ font-weight:700;padding:7px 12px;line-height:1.45;font-size:13px;
+}
+.hobby-nav-links .account-link:hover{background:#ffffff38;color:#fff}
+.hobby-nav-links .account-signup{background:#fbe7d2;color:#52366a;border-color:#fbe7d2}
+.hobby-nav-links [hidden],.hobby-mine[hidden]{display:none!important}
+.account-user{color:#fae6fb;font-size:13px;font-weight:800;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;align-self:center}
+.account-dialog{width:min(450px,calc(100vw - 26px));max-height:min(90vh,820px);overflow:auto;padding:28px;
+ border:1px solid #e0d4f4;border-radius:23px;background:#fff;color:#34244e;box-shadow:0 30px 80px #08051e94}
+.account-dialog::backdrop{background:#080619b0;backdrop-filter:blur(6px)}
+.account-dialog .account-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.account-dialog h2{color:#34244e;margin:0;font-size:25px}
+.account-dialog .account-close{border:0;border-radius:50%;background:#f0e8f7;color:#4a3364;font-size:19px;width:38px;height:38px;cursor:pointer}
+.account-dialog label{color:#443257;display:block;font-size:14px;font-weight:800;margin:18px 0 8px}
+.account-dialog label span{display:block;color:#8f8198;font-size:12px;font-weight:400;margin-top:4px}
+.account-dialog input{display:block;width:100%;padding:13px 15px;min-height:45px;margin-top:8px;background:#faf7fd;color:#2b1e3b;border:1px solid #d7cbe5;border-radius:11px}
+.account-dialog .account-explain{font-size:13px;line-height:1.75;color:#746281}
+.account-dialog .feedback{font-size:13px;color:#7c417c;min-height:24px}
+.account-dialog .account-footer{display:flex;gap:11px;align-items:center;flex-wrap:wrap}
+.account-dialog .account-footer .account-link{color:#5c4176;border-color:#d5bee5;background:#f5eefb}
+.account-dialog .account-footer .button{min-height:45px}
+.account-dialog [hidden]{display:none!important}
+.hobby-mine{margin:10px 0 65px;padding:25px;border:1px solid #ffffff3b;border-radius:25px;background:#ffffff12}
+.hobby-mine .my-actions{margin:20px 0}
+.my-list{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.my-post{padding:20px;border:1px solid #ffffff35;border-radius:17px;background:#ffffff18;overflow-wrap:anywhere}
+.my-post h3{font-size:19px;color:white;margin:9px 0}
+.my-post p{font-size:14px;white-space:pre-wrap;line-height:1.85;color:#eee7f5}
+.my-post .my-status{font-size:12px;font-weight:800;color:#ffe3ae}
+.my-post img{display:block;width:100%;max-height:170px;object-fit:cover;border-radius:10px;margin:12px 0}
+.my-post button{background:#ffe0e9;color:#612d52;border:0;border-radius:99px;padding:9px 14px;font-weight:700}
+@media(max-width:650px){
+ .my-list{grid-template-columns:1fr}.hobby-mine{padding:17px}
+ .hobby-nav-links{align-items:center}
+ .hobby-nav-links .account-link{padding:6px 9px;font-size:12px}
+ .account-dialog{padding:21px}
+}
