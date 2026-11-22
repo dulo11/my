@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320" role="img" aria-label="雲博客粉紫动态头像">
+<defs>
+ <radialGradient id="orb" cx="37%" cy="27%" r="81%"><stop offset="0" stop-color="#eecded"/><stop offset=".28" stop-color="#c9afe7"/><stop offset=".69" stop-color="#a988d0"/><stop offset=".91" stop-color="#a890ce"/><stop offset="1" stop-color="#e8d0f1"/></radialGradient>
+ <radialGradient id="inner" cx="48%" cy="45%" r="69%"><stop offset="0" stop-color="#a586d0" stop-opacity=".08"/><stop offset=".67" stop-color="#8561ae" stop-opacity=".12"/><stop offset="1" stop-color="#9061ac" stop-opacity=".43"/></radialGradient>
+ <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffefc"/><stop offset=".36" stop-color="#f5d3fa"/><stop offset=".62" stop-color="#dba4ed"/><stop offset="1" stop-color="#ffedf6"/></linearGradient>
+ <linearGradient id="crystal" x1="0" y1="0" x2=".83" y2="1"><stop offset="0" stop-color="#fff6ed"/><stop offset=".2" stop-color="#ffd6ef"/><stop offset=".42" stop-color="#f5a9f0"/><stop offset=".7" stop-color="#b783dd"/><stop offset="1" stop-color="#f8d5fc"/></linearGradient>
+ <radialGradient id="petal"><stop offset="0" stop-color="#fff1f6"/><stop offset=".6" stop-color="#f6bfdf"/><stop offset="1" stop-color="#eba2d1"/></radialGradient>
+ <radialGradient id="cloud" cx=".36" cy=".27"><stop offset="0" stop-color="#fffaff"/><stop offset=".65" stop-color="#f6e5fa"/><stop offset="1" stop-color="#dcbde9"/></radialGradient>
+ <filter id="halo" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="3"/></filter>
+ <clipPath id="round"><circle cx="160" cy="160" r="140"/></clipPath>
+ <style>
+ .spark{transform-box:fill-box;transform-origin:center;animation:blink 5.8s ease-in-out infinite alternate}
+ .spark:nth-of-type(2n){animation-delay:-2.7s}
+ .orbit{animation:orbreathe 7s ease-in-out infinite alternate;transform-origin:160px 160px}
+ .petal{animation:petalfade 7s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+ @keyframes blink{0%{opacity:.5;transform:scale(.9)}45%{opacity:1;transform:scale(1.04)}100%{opacity:.58;transform:scale(.92)}}
+ @keyframes orbreathe{0%{opacity:.46;transform:rotate(-1.5deg)}100%{opacity:.85;transform:rotate(1.5deg)}}
+ @keyframes petalfade{0%{opacity:.74;transform:translate(0,0)}100%{opacity:1;transform:translate(2px,-3px)}}
+ @media(prefers-reduced-motion:reduce){*{animation:none!important}}
+ </style>
+</defs>
+<circle cx="160" cy="160" r="147" fill="#cbb4eb" opacity=".34" filter="url(#halo)"/>
+<circle cx="160" cy="160" r="142" fill="url(#orb)" stroke="#fbe3f6" stroke-width="5"/>
+<circle cx="160" cy="160" r="138" fill="url(#inner)"/>
+<g clip-path="url(#round)">
+<ellipse cx="103" cy="65" rx="104" ry="40" transform="rotate(-30 103 65)" fill="#fff" opacity=".2" />
+<path d="M31 133 C47 55 106 30 159 25" fill="none" stroke="#fff" stroke-width="9" opacity=".47" stroke-linecap="round"/>
+<path d="M66 70 Q107 27 163 24" fill="none" stroke="#fff" stroke-width="2.3" opacity=".54"/>
+<ellipse cx="218" cy="237" rx="64" ry="44" fill="#fce3fa" opacity=".12" />
+<g class="orbit"><ellipse cx="160" cy="173" rx="112" ry="32" transform="rotate(-24 160 173)" fill="none" stroke="#fce5ed" stroke-width="2.2" opacity=".76"/>
+<ellipse cx="160" cy="173" rx="112" ry="32" transform="rotate(-24 160 173)" fill="none" stroke="#fff" stroke-width=".7" opacity=".72"/></g>
+<g fill="url(#crystal)" stroke="#ffe9f5" stroke-width="2.8">
+<path d="M160 55 180 123 247 160 180 178 160 248 137 178 73 160 137 125Z"/>
+<path d="M160 89 187 133 226 131 192 164 198 201 161 187 124 202 129 163 96 131 136 134Z" fill="#e3b6f2" fill-opacity=".72"/>
+<path d="M160 58V245M75 160H246M112 112 208 208M208 112 112 208" fill="none" stroke="#fff8ff" stroke-width="1.8" opacity=".62"/>
+</g><circle cx="160" cy="160" r="6" fill="#fff5ff"/>
+<g class="spark" fill="#fffdf2"><path d="M246 77q3 17 19 20-16 3-19 20-3-17-19-20 16-3 19-20Z"/></g>
+<g class="petal" fill="url(#petal)" stroke="#ffebfb" stroke-width="1">
+<path d="M251 54q17-9 20 5t-13 17q-15-3-7-22Z" transform="rotate(-8 251 54)"/>
+<path d="M64 239q-20-11-18 5t18 17q13-9 0-22Z" transform="rotate(-17 64 239)"/>
+<path d="M239 272q17-13 19 1t-12 16q-16 0-7-17Z" transform="rotate(19 239 272)"/>
+</g>
+<g fill="url(#shine)" class="spark"><path d="M72 109q3 16 17 19-14 3-17 18-3-15-17-18 14-3 17-19Z"/><path d="M251 149q3 12 16 15-13 3-16 16-3-13-15-16 12-3 15-15Z"/></g>
+<g fill="#fff" opacity=".83"><circle cx="93" cy="198" r="2.3"/><circle cx="234" cy="87" r="2.2"/><circle cx="198" cy="263" r="1.7"/><circle cx="113" cy="66" r="1.6"/></g>
+</g>
+<circle cx="160" cy="160" r="140" fill="none" stroke="#fffafc" stroke-width="3" opacity=".78"/>
+<path d="M58 267Q164 332 264 252" fill="none" stroke="#f9dbef" stroke-width="3.5" opacity=".43"/>
+</svg>
