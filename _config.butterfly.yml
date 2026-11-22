@@ -1,4 +1,4 @@
-# 作者卡片头像（备用静态入口）；实际头像由 /js/yun-avatar-cycle.js 在刷新时切换
+# 作者卡片头像（备用静态入口）；四款头像实际由 /js/yun-avatar-cycle.js 每 4 秒慢速切换
 avatar:
   img: /img/avatar/star.gif
   effect: false
@@ -38,7 +38,7 @@ inject:
   bottom:
     - <script src="/js/sakura.js?v=20261025-2"></script>
     - <script src="/js/yun-themes.js?v=20261025-2"></script>
-    - <script src="/js/yun-avatar-cycle.js?v=20261122-2"></script>
+    - <script src="/js/yun-avatar-cycle.js?v=20261123-1"></script>
 footer:
   owner:
     enable: true
