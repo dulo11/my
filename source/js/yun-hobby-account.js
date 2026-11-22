@@ -6,7 +6,7 @@ const dialog=$("account-dialog"),form=$("account-form");
 let mode="register",currentUser=null,myPage=1;
 function status(value){$("account-status").textContent=value||"";}
 function myStatus(value){$("my-status").textContent=value||"";}
-const text=(tag,value,cls)=>{const n=document.createElement(tag);n.textContent=value;if(cls)n.className=cls;return n;};
+const text=(tag,value,cls)=>{const n=document.createElement(tag);if(value!==undefined)n.textContent=value;if(cls)n.className=cls;return n;};
 async function api(action,data,params=""){
  const url="/api/hobby-account?action="+encodeURIComponent(action)+params;
  let response;
