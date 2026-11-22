@@ -120,7 +120,7 @@ toc: false
           <button type="button" data-yun-cloud-copy>📋 复制取回码</button>
           <button type="button" data-yun-cloud-delete>删除云端记录</button>
         </div>
-        <p class="yun-letter__small">请妥善保管取回码。正文在 Cloudflare D1 中明文保存，网站管理员能够查看；任何拿到取回码的人都能读取或修改。不要存放密码、证件号等敏感内容。</p>
+        <p class="yun-letter__small">请妥善保管取回码。正文在网站数据库中以明文形式保存，网站管理员能够查看；任何拿到取回码的人都能读取或修改。不要存放密码、证件号等敏感内容。</p>
       </div>
       <p class="yun-letter__status" data-yun-status role="status" aria-live="polite"></p>
       <p class="yun-letter__small">本地留言和云端留言互相独立，只有点击相应按钮才会上传、下载或删除。清除浏览器数据会丢失本地留言和保存的取回码，云端记录不会因此删除。</p>
