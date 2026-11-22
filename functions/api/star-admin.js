@@ -44,7 +44,7 @@ async function ensureSettings(db) {
 }
 const setCookie = (value, age) =>
   'star_session=' + value + '; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=' + age;
-async function sessionValid(req, db) {
+export async function sessionValid(req, db) {
   const cookie = (req.headers.get('cookie') || '').split(';').map(x => x.trim())
     .find(x => x.startsWith('star_session='))?.slice('star_session='.length);
   if (!cookie) return false;
