@@ -1,5 +1,6 @@
 import {sessionValid} from "./star-admin.js";
 import {ensureHobbyAuthSchema,hobbyUserFromRequest} from "../_lib/hobby-auth.js";
+import {ensureHobbyCommunity,addHobbyNotification} from "../_lib/hobby-community.js";
 /* 爱好板 · Cloudflare Pages + D1，全部投稿先审核 */
 const TYPES=["person","object","quote","memory","other"];
 const STATE=["pending","visible","hidden"];
@@ -22,7 +23,7 @@ const enc=new TextEncoder();
 const hex=buffer=>Array.from(new Uint8Array(buffer)).map(x=>x.toString(16).padStart(2,"0")).join("");
 async function digest(s){return hex(await crypto.subtle.digest("SHA-256",enc.encode(s)));}
 async function ipKey(request) {return digest(request.headers.get("CF-Connecting-IP")||"unknown");}
-async function schema(db){
+export async function schema(db){
  if(!ready.has(db))ready.set(db,db.batch(ddl.map(q=>db.prepare(q))).catch(err=>{ready.delete(db);throw err;}));
  await ready.get(db);
 }
@@ -72,9 +73,13 @@ export async function onRequest({request,env}){
    if(cat!=="all"&&!TYPES.includes(cat))throw new Bad(400,"分类不正确");
    const page=Math.max(1,Math.min(1000,Number.parseInt(url.searchParams.get("page")||"1",10)||1));
    const sort=url.searchParams.get("sort")==="popular"?"popular":"latest";
-   const sql="SELECT id,nickname,category,title,body,CASE WHEN image_webp IS NULL THEN 0 ELSE 1 END AS hasImage,pinned,likes,created_at FROM hobby_posts WHERE status='visible' AND (?='all' OR category=?) ORDER BY pinned DESC, "+(sort==="popular"?"likes DESC,":"")+"created_at DESC LIMIT 13 OFFSET ?";
-   const items=(await db.prepare(sql).bind(cat,cat,(page-1)*12).all()).results||[];
-   const count=await db.prepare("SELECT COUNT(*) AS total FROM hobby_posts WHERE status='visible' AND (?='all' OR category=?)").bind(cat,cat).first();
+   const q=(url.searchParams.get("q")||"").trim().slice(0,80);
+   await ensureHobbyAuthSchema(db);
+   const conditions="p.status='visible' AND (?='all' OR p.category=?) AND (?='' OR instr(lower(p.title),lower(?))>0 OR instr(lower(p.body),lower(?))>0 OR instr(lower(p.nickname),lower(?))>0)";
+   const args=[cat,cat,q,q,q,q];
+   const sql="SELECT p.id,p.nickname,p.category,p.title,p.body,CASE WHEN p.image_webp IS NULL THEN 0 ELSE 1 END AS hasImage,p.pinned,p.likes,p.created_at,o.user_id AS ownerId FROM hobby_posts p LEFT JOIN hobby_post_owners o ON o.post_id=p.id WHERE "+conditions+" ORDER BY p.pinned DESC, "+(sort==="popular"?"p.likes DESC,":"")+"p.created_at DESC LIMIT 13 OFFSET ?";
+   const items=(await db.prepare(sql).bind(...args,(page-1)*12).all()).results||[];
+   const count=await db.prepare("SELECT COUNT(*) AS total FROM hobby_posts p WHERE "+conditions).bind(...args).first();
    return ok({items:items.slice(0,12),page,hasMore:items.length>12,total:count?.total||0});
   }
   if(request.method==="GET"&&action==="admin-list"){
@@ -116,6 +121,28 @@ export async function onRequest({request,env}){
    await db.batch(statements);
    return ok({ok:true,id,status:"pending",message:"投稿成功，等待管理员审核后公开展示"},201);
   }
+
+  if(action==="edit"){
+   await ensureHobbyAuthSchema(db);
+   const account=await hobbyUserFromRequest(request,db);
+   if(!account)throw new Bad(401,"请先登录自己的账号");
+   if(!uuid(body.id))throw new Bad(400,"投稿编号无效");
+   const owned=await db.prepare("SELECT p.id FROM hobby_post_owners o JOIN hobby_posts p ON p.id=o.post_id WHERE o.post_id=? AND o.user_id=?").bind(body.id,account.id).first();
+   if(!owned)throw new Bad(403,"只能编辑自己账号发布的投稿");
+   const category=clean(body.category,24),title=clean(body.title,50),content=clean(body.body,600);
+   if(!TYPES.includes(category)||title.length<2||title.length>50||content.length<2||content.length>600)
+    throw new Bad(400,"标题需 2～50 字、正文需 2～600 字，并选择正确分类");
+   if(/https?:\/\/|www\.|(?:t\.me|bit\.ly|tinyurl\.com)/i.test(title+" "+content))throw new Bad(400,"暂不支持外部网址");
+   let hasImageChange=false,image=null;
+   if(body.removeImage===true){hasImageChange=true;image=null;}
+   if(body.image!==undefined&&body.image!==null&&body.image!==""){image=imageData(body.image);hasImageChange=true;}
+   const now=Date.now();
+   if(hasImageChange)
+    await db.prepare("UPDATE hobby_posts SET category=?,title=?,body=?,image_webp=?,status='pending',pinned=0,updated_at=? WHERE id=?").bind(category,title,content,image,now,body.id).run();
+   else
+    await db.prepare("UPDATE hobby_posts SET category=?,title=?,body=?,status='pending',pinned=0,updated_at=? WHERE id=?").bind(category,title,content,now,body.id).run();
+   return ok({ok:true,status:"pending",message:"修改已保存，重新进入待审核状态"});
+  }
   if(action==="like"){
    const id=body.id;if(!uuid(id))throw new Bad(400,"文章编号无效");
    const exists=await db.prepare("SELECT id FROM hobby_posts WHERE id=? AND status='visible'").bind(id).first();
@@ -144,18 +171,29 @@ export async function onRequest({request,env}){
    const status=clean(body.status,20);
    if(!STATE.includes(status))throw new Bad(400,"状态不正确");
    const pinned=body.pinned?1:0;
+   const before=await db.prepare("SELECT p.status,p.title,o.user_id AS ownerId FROM hobby_posts p LEFT JOIN hobby_post_owners o ON o.post_id=p.id WHERE p.id=?").bind(body.id).first();
+   if(!before)throw new Bad(404,"内容不存在");
    const r=await db.prepare("UPDATE hobby_posts SET status=?,pinned=?,updated_at=? WHERE id=?")
     .bind(status,pinned,Date.now(),body.id).run();
    if(!r.meta?.changes)throw new Bad(404,"内容不存在");
+   if(before.ownerId&&before.status!==status){
+    await ensureHobbyCommunity(db);
+    const message=status==="visible"?"你的投稿《"+before.title.slice(0,35)+"》已审核通过":status==="hidden"?"你的投稿《"+before.title.slice(0,35)+"》被隐藏":"你的投稿《"+before.title.slice(0,35)+"》需要重新审核";
+    await addHobbyNotification(db,before.ownerId,body.id,"post-status",message);
+   }
    return ok({ok:true});
   }
   if(action==="admin-delete"){
    await requireAdmin(request,db);
    await ensureHobbyAuthSchema(db);
+   await ensureHobbyCommunity(db);
    if(!uuid(body.id))throw new Bad(400,"编号不正确");
    await db.batch([
     db.prepare("DELETE FROM hobby_likes WHERE post_id=?").bind(body.id),
     db.prepare("DELETE FROM hobby_reports WHERE post_id=?").bind(body.id),
+    db.prepare("DELETE FROM hobby_favorites WHERE post_id=?").bind(body.id),
+    db.prepare("DELETE FROM hobby_comments WHERE post_id=?").bind(body.id),
+    db.prepare("DELETE FROM hobby_notifications WHERE post_id=?").bind(body.id),
     db.prepare("DELETE FROM hobby_post_owners WHERE post_id=?").bind(body.id),
     db.prepare("DELETE FROM hobby_posts WHERE id=?").bind(body.id)
    ]);
