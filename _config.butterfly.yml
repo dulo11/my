@@ -1,6 +1,6 @@
-# 作者卡片头像（平滑动态 WebP）；四款每 4 秒轮播，切换平滑淡入淡出
+# 作者卡片头像（高清粉紫矢量 SVG）；完整刷新才换下一款，不再每 4 秒强制切换
 avatar:
-  img: /img/avatar/star-smooth.webp
+  img: /img/avatar/star-vector.svg
   effect: false
 
 # 公告（右侧“公告”卡片）
@@ -38,7 +38,7 @@ inject:
   bottom:
     - <script src="/js/sakura.js?v=20261025-2"></script>
     - <script src="/js/yun-themes.js?v=20261025-2"></script>
-    - <script src="/js/yun-avatar-cycle.js?v=20261123-2"></script>
+    - <script src="/js/yun-avatar-cycle.js?v=20261123-3"></script>
 footer:
   owner:
     enable: true
