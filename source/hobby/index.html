@@ -6,7 +6,8 @@
 <meta name="description" content="雲的爱好板：分享你喜欢的人物、物品、句子与故事。每一种喜欢都值得被看见。">
 <meta name="theme-color" content="#181837">
 <title>爱好板 · 把喜欢留在这里 | 雲</title>
-<link rel="stylesheet" href="/css/yun-hobby.css?v=20261122-3">
+<link rel="stylesheet" href="/css/yun-hobby.css?v=20261122-4">
+<link rel="stylesheet" href="/css/yun-hobby-community.css?v=20261122-4">
 </head>
 <body>
 <div class="hobby-halo halo-one" aria-hidden="true"></div>
@@ -19,6 +20,8 @@
       <button type="button" id="account-login-open" class="account-link">登录</button>
       <button type="button" id="account-register-open" class="account-link account-signup">注册</button>
       <span id="account-info" class="account-user" hidden></span>
+      <button type="button" id="my-favorites-open" class="account-link" hidden>☆ 收藏夹</button>
+      <button type="button" id="my-notifications-open" class="account-link" hidden>🔔 消息 <span id="unread-count" hidden></span></button>
       <button type="button" id="account-logout" class="account-link" hidden>退出</button>
     </div>
   </nav>
@@ -51,6 +54,9 @@
       <button type="button" data-category="other" aria-pressed="false">🌈 其他珍藏</button>
     </div>
     <div class="toolbar">
+      <label for="hobby-search">🔍 搜索</label><input id="hobby-search" maxlength="80" placeholder="搜索标题、昵称或句子" type="search">
+      <button id="hobby-search-run" class="subtle" type="button">搜索</button>
+      <button id="hobby-search-clear" class="subtle" type="button" hidden>清除</button>
       <label for="sort">排序：</label>
       <select id="sort"><option value="latest">最新分享</option><option value="popular">最多喜欢</option></select>
       <button id="refresh" class="subtle" type="button">⟳ 刷新</button>
@@ -69,6 +75,7 @@
     <div class="my-actions"><button id="my-reload" type="button" class="button ghost">⟳ 刷新我的投稿</button></div>
     <p id="my-status" class="feedback" role="status"></p>
     <div id="my-list" class="my-list"></div>
+    <div class="pagination"><button type="button" id="my-prev" disabled>← 上一页</button><span id="my-page">第 1 页</span><button type="button" id="my-next" disabled>下一页 →</button></div>
   </section>
 
   <section class="hobby-submit" id="post-box">
@@ -82,7 +89,8 @@
       </div>
     </div>
     <form id="hobby-form" class="hobby-form">
-      <h3>✎ 我的喜欢</h3>
+      <h3 id="hobby-form-title">✎ 我的喜欢</h3>
+      <p id="hobby-edit-tip" hidden class="form-help">正在编辑自己的投稿。提交后会重新进入待审核状态，原文在审核前不会公开。</p>
       <div class="form-row">
         <label>我的昵称 <span>选填</span><input name="nickname" maxlength="24" placeholder="匿名收藏家" autocomplete="nickname"></label>
         <label>分享类型 <span>必选</span><select name="category" required>
@@ -100,9 +108,10 @@
       <label>留一张小照片 <span>选填 · 自动压缩</span>
         <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif">
       </label>
+      <label id="remove-old-photo-label" hidden class="remove-old-photo"><input id="remove-old-photo" type="checkbox"> 清除原来的配图（编辑时有效）</label>
       <div class="photo-preview" id="photo-preview" hidden><img id="preview-img" alt="待上传图片预览"><button type="button" id="remove-photo">移除图片</button></div>
       <p class="form-help">图片将在手机上压缩为约 100KB 以下的 WebP 缩略图后上传。限一张，原文件不超过 8MB；不支持上传视频。</p>
-      <div class="form-end"><span id="char-count">0 / 600</span><button id="submit" type="submit" class="button primary">✦ 提交分享</button></div>
+      <div class="form-end"><span id="char-count">0 / 600</span><button id="edit-cancel" hidden type="button" class="button ghost">取消编辑</button><button id="submit" type="submit" class="button primary">✦ 提交分享</button></div>
       <p id="form-status" class="feedback" role="status" aria-live="polite"></p>
     </form>
   </section>
@@ -129,7 +138,39 @@
     </div>
   </form>
 </dialog>
-<script defer src="/js/yun-hobby.js?v=20261122-3"></script>
-<script defer src="/js/yun-hobby-account.js?v=20261122-3"></script>
+
+<dialog id="post-dialog" class="community-dialog" aria-labelledby="post-dialog-title">
+  <div class="community-dialog-head"><h2 id="post-dialog-title">分享详情</h2><button type="button" id="post-dialog-close" aria-label="关闭详情">✕</button></div>
+  <p id="post-dialog-status" class="feedback" role="status"></p>
+  <div id="post-detail-content"></div>
+  <div class="community-tool-row">
+    <button type="button" id="post-favorite">☆ 收藏</button>
+    <button type="button" id="post-share">🔗 分享链接</button>
+    <button type="button" id="post-card">🖼️ 制作分享卡片</button>
+  </div>
+  <section class="community-comments">
+    <h3>💬 评论与回复</h3>
+    <div id="post-comments"></div>
+    <form id="post-comment-form">
+      <p id="post-reply-label" hidden></p>
+      <button type="button" id="post-reply-cancel" hidden>取消回复</button>
+      <label for="post-comment-text">留言 <span>登录后可以评论，评论审核通过后公开</span></label>
+      <textarea id="post-comment-text" minlength="2" maxlength="300" required rows="3" placeholder="分享你的想法（2～300 字）"></textarea>
+      <button id="post-comment-send" type="submit">发送评论</button>
+      <p id="post-comment-status" class="feedback" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</dialog>
+<dialog id="community-dialog" class="community-dialog" aria-labelledby="community-title">
+  <div class="community-dialog-head"><h2 id="community-title">我的收藏</h2><button type="button" id="community-close" aria-label="关闭">✕</button></div>
+  <p id="community-status" class="feedback" role="status"></p>
+  <div id="community-items"></div>
+  <div id="community-pagination" class="pagination" hidden>
+    <button type="button" id="community-prev">← 上一页</button><span id="community-page">第 1 页</span><button type="button" id="community-next">下一页 →</button>
+  </div>
+</dialog>
+<script defer src="/js/yun-hobby.js?v=20261122-4"></script>
+<script defer src="/js/yun-hobby-account.js?v=20261122-4"></script>
+<script defer src="/js/yun-hobby-community.js?v=20261122-4"></script>
 </body>
 </html>
