@@ -1,7 +1,7 @@
 ---
 title: 云的另一面｜一封会变色的信
 date: 2026-11-22 21:30:00
-updated: 2026-11-22 21:30:00
+updated: 2026-11-22 22:35:00
 categories:
   - 心情随笔
 tags:
@@ -95,15 +95,35 @@ toc: false
     <h3>留一封不会寄出的信，给未来的自己</h3>
     <div class="yun-letter__panel">
       <p>想象一年后的你再次路过这里。那时的天气、烦恼和愿望也许已经不同。你会不会想告诉过去的自己：谢谢你，一直没有放弃生活里的小小期待？</p>
-      <p>写一句想记住的话。不需要华丽，不需要给任何人看。把它留在自己的浏览器里，就像把一颗微小的星星放进口袋。</p>
+      <p>写一句想记住的话。不需要华丽，也不需要给任何人看。你可以只保存在手机里，也可以主动上传到云端，换设备后再取回。</p>
       <label for="yun-letter-capsule"><strong>给未来的我：</strong></label>
       <textarea id="yun-letter-capsule" class="yun-letter__capsule" data-yun-capsule maxlength="240" placeholder="亲爱的未来的我，希望你依然……（最多 240 字）"></textarea>
-      <div class="yun-letter__actions">
-        <button type="button" data-yun-save>💌 把这句话存起来</button>
-        <button type="button" data-yun-clear>清空本地留言</button>
+      <div class="yun-letter__storage-box">
+        <h4>📱 方式一：保存在本地</h4>
+        <p class="yun-letter__small">随时保存，还可以下载 TXT 文件到手机，换设备时再导入。</p>
+        <div class="yun-letter__actions">
+          <button type="button" data-yun-save>💌 存到当前浏览器</button>
+          <button type="button" data-yun-export>⬇️ 下载到手机</button>
+          <button type="button" data-yun-import>⬆️ 从手机导入</button>
+          <button type="button" data-yun-clear>清空本地留言</button>
+        </div>
+        <input type="file" accept=".txt,text/plain" data-yun-file class="yun-letter__file" aria-label="选择 TXT 留言备份文件">
       </div>
-      <p class="yun-letter__status" data-yun-status aria-live="polite"></p>
-      <p class="yun-letter__small">隐私说明：只使用当前浏览器的 localStorage，不上传到服务器，不公开，也不会跨设备同步。清除浏览器网站数据或更换设备后，这句话可能丢失；请勿把这里当作可靠备份。</p>
+      <div class="yun-letter__storage-box">
+        <h4>☁️ 方式二：保存到云端</h4>
+        <p class="yun-letter__small">无需注册。首次上传后生成取回码，换手机输入取回码就能找回。以后用同一个取回码上传，可覆盖原内容。</p>
+        <label for="yun-letter-cloud-code"><strong>你的云端取回码：</strong></label>
+        <input id="yun-letter-cloud-code" class="yun-letter__code" data-yun-cloud-code type="text" maxlength="48" autocomplete="off" spellcheck="false" placeholder="首次上传后生成；也可粘贴旧取回码">
+        <div class="yun-letter__actions">
+          <button type="button" data-yun-cloud-save>☁️ 上传 / 更新</button>
+          <button type="button" data-yun-cloud-load>↩️ 云端取回</button>
+          <button type="button" data-yun-cloud-copy>📋 复制取回码</button>
+          <button type="button" data-yun-cloud-delete>删除云端记录</button>
+        </div>
+        <p class="yun-letter__small">请妥善保管取回码。正文在 Cloudflare D1 中明文保存，网站管理员能够查看；任何拿到取回码的人都能读取或修改。不要存放密码、证件号等敏感内容。</p>
+      </div>
+      <p class="yun-letter__status" data-yun-status role="status" aria-live="polite"></p>
+      <p class="yun-letter__small">本地留言和云端留言互相独立，只有点击相应按钮才会上传、下载或删除。清除浏览器数据会丢失本地留言和保存的取回码，云端记录不会因此删除。</p>
     </div>
   </section>
 
